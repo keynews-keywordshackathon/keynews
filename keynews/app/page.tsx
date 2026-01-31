@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +16,7 @@ const sections = [
       {
         title: "UIUC Career Fair slots open for AI-focused teams",
         summary:
-          "Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.",
+          "Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.Your calendar highlights a university career fair next week with a dedicated AI and systems track. The CS department’s employer list shows several companies you follow, including two that recently funded research in trustworthy ML. A new invite in your inbox includes a student-only resume workshop the night before, which lines up with your preferred time block. The fair’s schedule has been extended to accommodate engineering demos, giving you extra time to meet teams. Registration closes Friday, and the waitlist historically fills within 24 hours. Your availability window is still free in the afternoon.",
         relevance:
           "You’re in UIUC Engineering and the event aligns with your AI systems track and open calendar slots.",
         actionReason:
@@ -228,7 +232,28 @@ const stockPanel = {
   },
 };
 
+const getPreviewText = (text: string, sentenceCount = 2) => {
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  return sentences.slice(0, sentenceCount).join(" ");
+};
+
 export default function Home() {
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+  const [activeArticle, setActiveArticle] = useState<
+    (typeof sections)[number]["articles"][number] | null
+  >(null);
+
+  useEffect(() => {
+    if (!activeArticle) {
+      document.body.style.overflow = "";
+      return;
+    }
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeArticle]);
+
   return (
     <div
       id="top"
@@ -237,6 +262,149 @@ export default function Home() {
       <div className="pointer-events-none absolute -top-40 right-[-10%] h-[30rem] w-[30rem] rounded-full bg-indigo-500/30 blur-3xl animate-[float_18s_ease-in-out_infinite]" />
       <div className="pointer-events-none absolute -bottom-32 left-[-10%] h-[26rem] w-[26rem] rounded-full bg-amber-400/25 blur-3xl animate-[float_22s_ease-in-out_infinite]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.6),_transparent_55%)]" />
+      <div
+        className={`fixed inset-0 z-40 ${
+          isAssistantOpen ? "pointer-events-auto" : "pointer-events-none"
+        }`}
+      >
+        <div
+          className={`absolute inset-0 bg-black/30 transition-opacity ${
+            isAssistantOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setIsAssistantOpen(false)}
+        />
+        <div
+          className={`absolute right-0 top-0 h-full w-full max-w-sm bg-white/90 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${
+            isAssistantOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex h-full flex-col">
+            <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                  AI Assistant
+                </p>
+                <h3 className="mt-1 text-lg font-medium">News sidekick</h3>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setIsAssistantOpen(false)}>
+                Retract
+              </Button>
+            </div>
+            <div className="flex-1 overflow-hidden px-6 py-4">
+              <div className="flex h-full flex-col gap-4 overflow-y-auto custom-scrollbar">
+                <div className="max-w-[85%] rounded-2xl bg-white/80 px-4 py-3 text-sm text-zinc-700 shadow-sm">
+                  Morning! Want a quick summary or deeper context on any story?
+                </div>
+                <div className="ml-auto max-w-[85%] rounded-2xl bg-zinc-900 px-4 py-3 text-sm text-white shadow-sm">
+                  Summarize the personal brief and suggest follow-ups.
+                </div>
+                <div className="max-w-[85%] rounded-2xl bg-white/80 px-4 py-3 text-sm text-zinc-700 shadow-sm">
+                  Your personal brief highlights the UIUC career fair opening, with registration
+                  closing Friday. I can pull related company profiles or add a reminder. Which
+                  follow-up do you want?
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-black/5 px-6 py-4">
+              <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-3 shadow-sm">
+                <input
+                  type="text"
+                  placeholder="Ask about today's coverage..."
+                  className="flex-1 bg-transparent text-sm placeholder:text-zinc-400 focus:outline-none"
+                />
+                <Button size="sm">Send</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {activeArticle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setActiveArticle(null)}
+          />
+          <div className="relative w-[80vw] max-w-[80vw] overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-white/15 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.75)] backdrop-blur-2xl">
+            <div className="flex items-center justify-between border-b border-white/20 px-6 py-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                  Full Story
+                </p>
+                <h3 className="mt-1 text-lg font-medium">{activeArticle.title}</h3>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setActiveArticle(null)}>
+                Close
+              </Button>
+            </div>
+            <div className="max-h-[80vh] overflow-y-auto px-8 py-8 custom-scrollbar">
+              <div className="space-y-10">
+                <div className="grid grid-cols-2 gap-4">
+                  {activeArticle.images.map((image) => (
+                    <div
+                      key={`${activeArticle.title}-${image.label}`}
+                      className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${
+                        activeArticle.images.length === 1 ? "col-span-2" : ""
+                      }`}
+                    >
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+                      <div className="relative z-10 flex h-full items-end p-4 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                        {image.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-6">
+                  <p className="text-xl leading-relaxed text-zinc-800">
+                    {activeArticle.summary}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
+                    <span className="font-medium uppercase tracking-[0.2em]">Sources</span>
+                    {activeArticle.sources.map((source) => (
+                      <Link
+                        key={source.href}
+                        href={source.href}
+                        className="rounded-full bg-white/50 px-3 py-1 transition hover:bg-white/70"
+                        target="_blank"
+                      >
+                        {source.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-white/20 bg-white/30 p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
+                  <p className="text-[0.7rem] font-medium uppercase tracking-[0.32em] text-zinc-500">
+                    Action
+                  </p>
+                  <div className="mt-3 space-y-3 text-sm text-zinc-700">
+                    <div>
+                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                        Why it matters
+                      </p>
+                      <p className="mt-1">{activeArticle.relevance}</p>
+                    </div>
+                    <div>
+                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                        Why act now
+                      </p>
+                      <p className="mt-1">{activeArticle.actionReason}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <Link
+                      href={activeArticle.action.href}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-500"
+                    >
+                      <ArrowRight className="size-4" />
+                      {activeArticle.action.label}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <header className="relative z-10 border-b border-black/10 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 lg:flex-row lg:items-end lg:justify-between">
@@ -245,7 +413,7 @@ export default function Home() {
               AI Newspaper · Personalized · Live
             </div>
             <div className="space-y-2">
-              <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+              <h1 className="text-4xl font-medium tracking-tight md:text-5xl">
                 Keynews Daily
               </h1>
               <p className="max-w-2xl text-base text-zinc-600 md:text-lg">
@@ -273,13 +441,13 @@ export default function Home() {
           <div className="flex animate-marquee whitespace-nowrap">
             {stockPanel.tickers.map((item, index) => (
               <div key={item.name} className="mx-4 inline-flex items-center gap-2">
-                <span className="font-semibold">{item.name}</span>
-                <span className={`font-semibold ${item.change.startsWith('+') ? 'text-emerald-600' : 'text-red-600'}`}>
+                <span className="font-medium">{item.name}</span>
+                <span className={`font-medium ${item.change.startsWith('+') ? 'text-emerald-600' : 'text-red-600'}`}>
                   {item.change}
                 </span>
                 <span className="text-xs text-zinc-500">{item.note}</span>
                 {index < stockPanel.tickers.length - 1 && (
-                  <span className="mx-2 text-zinc-300">•</span>
+                  <span className="text-zinc-300">·</span>
                 )}
               </div>
             ))}
@@ -385,19 +553,32 @@ export default function Home() {
                               ))}
                             </div>
                             <div className="space-y-3">
-                              <h4 className="text-lg font-semibold">{article.title}</h4>
-                              <p className="text-sm leading-6 text-zinc-600">
-                                {article.summary}
-                              </p>
+                              <h4 className="text-lg font-medium">{article.title}</h4>
+                              <div className="relative">
+                                <p className="text-sm leading-6 text-zinc-600">
+                                  {getPreviewText(article.summary)}
+                                </p>
+                                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/95 to-transparent" />
+                              </div>
+                              <div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setActiveArticle(article)}
+                                >
+                                  Read full article
+                                  <ArrowUpRight className="size-4" />
+                                </Button>
+                              </div>
                               <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                                <span className="font-semibold uppercase tracking-[0.2em]">
+                                <span className="font-medium uppercase tracking-[0.2em]">
                                   Sources
                                 </span>
                                 {article.sources.map((source) => (
                                   <Link
                                     key={source.href}
                                     href={source.href}
-                                    className="rounded-full border border-black/10 bg-white/80 px-3 py-1 transition hover:border-black/30"
+                                    className="rounded-full bg-white/80 px-3 py-1 transition hover:bg-white"
                                     target="_blank"
                                   >
                                     {source.label}
@@ -406,35 +587,33 @@ export default function Home() {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-5 rounded-2xl border border-black/25 bg-gradient-to-br from-zinc-900/5 via-white/80 to-white p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)]">
+                          <div className="mt-5 rounded-2xl bg-gradient-to-br from-zinc-900/5 via-white/80 to-white p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)]">
                             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
                               Action
                             </p>
                             <div className="mt-3 space-y-3 text-sm text-zinc-700">
                               <div>
-                                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.26em] text-zinc-500">
+                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
                                   Why it matters
                                 </p>
                                 <p className="mt-1">{article.relevance}</p>
                               </div>
                               <div>
-                                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.26em] text-zinc-500">
+                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
                                   Why act now
                                 </p>
                                 <p className="mt-1">{article.actionReason}</p>
                               </div>
                             </div>
-                            <div className="mt-4 rounded-xl border border-black/15 bg-white/80 p-4">
-                              <p className="text-sm font-medium text-zinc-800">
+                            <div className="mt-4">
+                              <Link
+                                href={article.action.href}
+                                target="_blank"
+                                className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-500"
+                              >
+                                <ArrowRight className="size-4" />
                                 {article.action.label}
-                              </p>
-                              <div className="mt-3">
-                                <Button asChild size="sm">
-                                  <Link href={article.action.href} target="_blank">
-                                    {article.action.cta}
-                                  </Link>
-                                </Button>
-                              </div>
+                              </Link>
                             </div>
                           </div>
                         </article>
@@ -500,7 +679,7 @@ export default function Home() {
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
                     {weatherPanel.title}
                   </p>
-                  <h3 className="mt-2 text-xl font-semibold">{weatherPanel.location}</h3>
+                  <h3 className="mt-2 text-xl font-medium">{weatherPanel.location}</h3>
                   <p className="mt-2 text-sm text-zinc-600">{weatherPanel.summary}</p>
                 </div>
                 <div className="grid gap-3">
@@ -551,41 +730,21 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="sticky top-24 self-start rounded-3xl border border-black/10 bg-white/70 p-5 backdrop-blur-xl">
-              <div className="flex h-[480px] flex-col gap-4">
+            <div className="rounded-2xl bg-white/60 p-4 backdrop-blur-xl">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
                     AI Assistant
                   </p>
-                  <h3 className="mt-1 text-xl font-semibold">Chat with your brief</h3>
+                  <p className="mt-1 text-sm text-zinc-600">
+                    Open the assistant for quick analysis.
+                  </p>
                 </div>
-                <div className="flex-1 overflow-hidden rounded-2xl border border-black/10 bg-white/80">
-                  <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-                    <div className="max-w-[85%] rounded-2xl bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-                      Morning! Want a quick summary or deeper context on any story?
-                    </div>
-                    <div className="ml-auto max-w-[85%] rounded-2xl bg-zinc-900 px-4 py-3 text-sm text-white shadow-sm">
-                      Summarize the personal brief and suggest follow-ups.
-                    </div>
-                    <div className="max-w-[85%] rounded-2xl bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-                      Your personal brief highlights the UIUC career fair opening, with registration
-                      closing Friday. I can pull related company profiles or add a reminder. Which
-                      follow-up do you want?
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-black/15 bg-white/90 p-3">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      placeholder="Ask about today's coverage..."
-                      className="flex-1 bg-transparent text-sm placeholder:text-zinc-400 focus:outline-none"
-                    />
-                    <Button size="sm">Send</Button>
-                  </div>
-                </div>
+                <Button size="sm" onClick={() => setIsAssistantOpen(true)}>
+                  Open
+                </Button>
               </div>
-            </section>
+            </div>
           </aside>
         </div>
       </main>
