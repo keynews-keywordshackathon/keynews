@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 
@@ -318,93 +319,110 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {activeArticle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-          <div
-            className="absolute inset-0 bg-white/20 backdrop-blur-md"
-            onClick={() => setActiveArticle(null)}
-          />
-          <div className="relative w-[80vw] max-w-[80vw] overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-white/15 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.75)] backdrop-blur-2xl">
-            <div className="flex items-center justify-between border-b border-white/20 px-6 py-4">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
-                  Full Story
-                </p>
-                <h3 className="mt-1 text-lg font-medium">{activeArticle.title}</h3>
-              </div>
-              <Button size="sm" variant="ghost" onClick={() => setActiveArticle(null)}>
-                Close
-              </Button>
-            </div>
-            <div className="max-h-[80vh] overflow-y-auto px-8 py-8 custom-scrollbar">
-              <div className="space-y-10">
-                <div className="grid grid-cols-2 gap-4">
-                  {activeArticle.images.map((image) => (
-                    <div
-                      key={`${activeArticle.title}-${image.label}`}
-                      className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${
-                        activeArticle.images.length === 1 ? "col-span-2" : ""
-                      }`}
-                    >
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-                      <div className="relative z-10 flex h-full items-end p-4 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-                        {image.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-6">
-                  <p className="text-xl leading-relaxed text-zinc-800">
-                    {activeArticle.summary}
+      <AnimatePresence>
+        {activeArticle && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-white/20 backdrop-blur-md"
+              onClick={() => setActiveArticle(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ 
+                type: "spring",
+                damping: 25,
+                stiffness: 300,
+                duration: 0.4 
+              }}
+              className="relative w-[80vw] max-w-[80vw] overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-white/15 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.75)] backdrop-blur-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-white/20 px-6 py-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                    Full Story
                   </p>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
-                    <span className="font-medium uppercase tracking-[0.2em]">Sources</span>
-                    {activeArticle.sources.map((source) => (
-                      <Link
-                        key={source.href}
-                        href={source.href}
-                        className="rounded-full bg-white/50 px-3 py-1 transition hover:bg-white/70"
-                        target="_blank"
+                  <h3 className="mt-1 text-lg font-medium">{activeArticle.title}</h3>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setActiveArticle(null)}>
+                  Close
+                </Button>
+              </div>
+              <div className="max-h-[80vh] overflow-y-auto px-8 py-8 custom-scrollbar">
+                <div className="space-y-10">
+                  <div className="grid grid-cols-2 gap-4">
+                    {activeArticle.images.map((image) => (
+                      <div
+                        key={`${activeArticle.title}-${image.label}`}
+                        className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${
+                          activeArticle.images.length === 1 ? "col-span-2" : ""
+                        }`}
                       >
-                        {source.label}
-                      </Link>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+                        <div className="relative z-10 flex h-full items-end p-4 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                          {image.label}
+                        </div>
+                      </div>
                     ))}
                   </div>
-                </div>
-                <div className="rounded-2xl border-2 border-emerald-500/40 bg-white/30 p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
-                  <p className="text-[0.7rem] font-medium uppercase tracking-[0.32em] text-zinc-500">
-                    Action
-                  </p>
-                  <div className="mt-3 space-y-3 text-sm text-zinc-700">
-                    <div>
-                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                        Why it matters
-                      </p>
-                      <p className="mt-1">{activeArticle.relevance}</p>
-                    </div>
-                    <div>
-                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                        Why act now
-                      </p>
-                      <p className="mt-1">{activeArticle.actionReason}</p>
+                  <div className="space-y-6">
+                    <p className="text-xl leading-relaxed text-zinc-800">
+                      {activeArticle.summary}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
+                      <span className="font-medium uppercase tracking-[0.2em]">Sources</span>
+                      {activeArticle.sources.map((source) => (
+                        <Link
+                          key={source.href}
+                          href={source.href}
+                          className="rounded-full bg-white/50 px-3 py-1 transition hover:bg-white/70"
+                          target="_blank"
+                        >
+                          {source.label}
+                        </Link>
+                      ))}
                     </div>
                   </div>
-                  <div className="mt-4">
-                    <Link
-                      href={activeArticle.action.href}
-                      target="_blank"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-500"
-                    >
-                      <ArrowRight className="size-4" />
-                      {activeArticle.action.label}
-                    </Link>
+                  <div className="rounded-2xl border-2 border-emerald-500/40 bg-white/30 p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
+                    <p className="text-[0.7rem] font-medium uppercase tracking-[0.32em] text-zinc-500">
+                      Action
+                    </p>
+                    <div className="mt-3 space-y-3 text-sm text-zinc-700">
+                      <div>
+                        <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                          Why it matters
+                        </p>
+                        <p className="mt-1">{activeArticle.relevance}</p>
+                      </div>
+                      <div>
+                        <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                          Why act now
+                        </p>
+                        <p className="mt-1">{activeArticle.actionReason}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <Link
+                        href={activeArticle.action.href}
+                        target="_blank"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-500"
+                      >
+                        <ArrowRight className="size-4" />
+                        {activeArticle.action.label}
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       <header className="relative z-10 border-b border-black/10 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 lg:flex-row lg:items-end lg:justify-between">
