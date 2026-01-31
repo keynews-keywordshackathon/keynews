@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
+import { CrosswordGame } from "@/components/crossword/crossword-game";
+import puzzleData from "@/lib/crossword/sample-puzzle.json";
+import type { PuzzleData } from "@/lib/crossword/types";
 
 const sections = [
   {
@@ -243,9 +246,10 @@ export default function Home() {
   const [activeArticle, setActiveArticle] = useState<
     (typeof sections)[number]["articles"][number] | null
   >(null);
+  const [isCrosswordOpen, setIsCrosswordOpen] = useState(false);
 
   useEffect(() => {
-    if (!activeArticle) {
+    if (!activeArticle && !isCrosswordOpen) {
       document.body.style.overflow = "";
       return;
     }
@@ -253,7 +257,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [activeArticle]);
+  }, [activeArticle, isCrosswordOpen]);
 
   return (
     <div
@@ -418,6 +422,47 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isCrosswordOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-white/20 backdrop-blur-md"
+              onClick={() => setIsCrosswordOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 20 }}
+              transition={{
+                type: "spring",
+                damping: 26,
+                stiffness: 280,
+                duration: 0.4,
+              }}
+              className="relative w-[92vw] max-w-[1200px] overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-white/15 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.75)] backdrop-blur-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-white/20 px-6 py-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                    Games
+                  </p>
+                  <h3 className="mt-1 text-lg font-medium">Daily Crossword</h3>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setIsCrosswordOpen(false)}>
+                  Close
+                </Button>
+              </div>
+              <div className="max-h-[80vh] overflow-y-auto px-6 py-6 custom-scrollbar">
+                <CrosswordGame puzzle={puzzleData as PuzzleData} />
               </div>
             </motion.div>
           </div>
@@ -640,6 +685,46 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+            </section>
+
+            <section className="rounded-3xl border border-black/10 bg-white/70 px-6 py-8 backdrop-blur-xl">
+              <div className="flex flex-wrap items-start justify-between gap-6">
+                <div className="space-y-3">
+                  <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                    Games
+                  </p>
+                  <h3 className="text-2xl font-medium">Daily Crossword</h3>
+                  <p className="text-sm text-zinc-600">
+                    Keep focus sharp with a quick puzzle tailored to your brief.
+                  </p>
+                </div>
+                <Button size="sm" onClick={() => setIsCrosswordOpen(true)}>
+                  Open crossword
+                </Button>
+              </div>
+              <div className="mt-6 grid gap-4 md:grid-cols-[1.2fr_1fr]">
+                <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-white/85 to-white p-5">
+                  <p className="text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
+                    Today&apos;s Game
+                  </p>
+                  <p className="mt-2 text-sm text-zinc-600">
+                    15×15 grid with checks, reveals, and autosave.
+                  </p>
+                  <div className="mt-4">
+                    <Button size="sm" variant="ghost" onClick={() => setIsCrosswordOpen(true)}>
+                      Play now
+                    </Button>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-black/10 bg-white/80 p-5">
+                  <p className="text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
+                    Progress
+                  </p>
+                  <p className="mt-2 text-sm text-zinc-600">
+                    Timer control, quick checks, and clue navigation are ready.
+                  </p>
+                </div>
+              </div>
             </section>
 
             <section className="rounded-3xl border border-black/10 bg-white/70 px-6 py-8 backdrop-blur-xl">

@@ -118,7 +118,6 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
 
       <CrosswordToolbar
         elapsedSeconds={state.timer.elapsedSeconds}
-        isTimerRunning={state.timer.isRunning}
         isPaused={!state.timer.isRunning && state.timer.elapsedSeconds > 0}
         dispatch={dispatch}
         isLocked={state.isRevealed}

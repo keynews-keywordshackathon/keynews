@@ -6,7 +6,6 @@ import type { GameAction } from "@/lib/crossword/types";
 
 interface CrosswordToolbarProps {
   elapsedSeconds: number;
-  isTimerRunning: boolean;
   isPaused: boolean;
   dispatch: React.Dispatch<GameAction>;
   /** When true, puzzle was revealed; timer and actions are disabled */
@@ -17,21 +16,16 @@ type DropdownType = "check" | "reveal" | "clear" | null;
 
 export function CrosswordToolbar({
   elapsedSeconds,
-  isTimerRunning,
   isPaused,
   dispatch,
   isLocked = false,
 }: CrosswordToolbarProps) {
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [allowUnlockOverride, setAllowUnlockOverride] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setAllowUnlockOverride(
-      new URLSearchParams(window.location.search).get("unlock") !== null
-    );
-  }, []);
+  const [allowUnlockOverride] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("unlock") !== null;
+  });
 
   const closeDropdown = useCallback(() => setOpenDropdown(null), []);
 
