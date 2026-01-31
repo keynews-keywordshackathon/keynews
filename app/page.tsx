@@ -650,7 +650,8 @@ export default function Home() {
                       {section.articles.map((article) => (
                         <article
                           key={article.title}
-                          className="py-4 transition hover:bg-black/5 lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
+                          onClick={() => setActiveArticle(article)}
+                          className="group cursor-pointer py-4 transition lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
                         >
                           <div className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
@@ -669,9 +670,9 @@ export default function Home() {
                               ))}
                             </div>
                             <div className="space-y-2">
-                              <h4 className="headline-secondary text-lg text-foreground">{article.title}</h4>
+                              <h4 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">{article.title}</h4>
                               <div className="relative">
-                                <p className="article-body text-muted-foreground">
+                                <p className="article-body text-muted-foreground transition-colors group-hover:text-zinc-400">
                                   {getPreviewText(article.summary)}
                                 </p>
                               </div>
@@ -679,7 +680,10 @@ export default function Home() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => setActiveArticle(article)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveArticle(article);
+                                  }}
                                 >
                                   Read full article
                                   <ArrowUpRight className="size-4" />
@@ -692,6 +696,7 @@ export default function Home() {
                                 {article.sources.map((source) => (
                                   <Link
                                     key={source.href}
+                                    onClick={(e) => e.stopPropagation()}
                                     href={source.href}
                                     className="newspaper-border-thin px-3 py-1 transition hover:bg-black/5"
                                     target="_blank"
@@ -707,15 +712,15 @@ export default function Home() {
                               <Sparkles className="size-3 text-emerald-600" />
                               Action
                             </p>
-                            <div className="mt-3 space-y-3 text-sm text-zinc-700">
+                            <div className="mt-3 space-y-3 text-sm text-zinc-700 transition-colors group-hover:text-zinc-400">
                               <div>
-                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500 transition-colors group-hover:text-zinc-400">
                                   Why it matters
                                 </p>
                                 <p className="mt-1">{article.relevance}</p>
                               </div>
                               <div>
-                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500 transition-colors group-hover:text-zinc-400">
                                   Why act now
                                 </p>
                                 <p className="mt-1">{article.actionReason}</p>
@@ -723,6 +728,7 @@ export default function Home() {
                             </div>
                             <div className="mt-4">
                               <Link
+                                onClick={(e) => e.stopPropagation()}
                                 href={article.action.href}
                                 target="_blank"
                                 className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
