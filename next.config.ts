@@ -4,6 +4,8 @@ import path from "path";
 const projectRoot = path.resolve(__dirname);
 
 const nextConfig: NextConfig = {
+    // Ensure @composio/core is only used on the server (uses node:crypto)
+    serverExternalPackages: ['@composio/core'],
     turbopack: {},
     webpack: (config) => {
         config.resolve.modules = [
