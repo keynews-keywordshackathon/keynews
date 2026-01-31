@@ -267,6 +267,26 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Stock ticker line - moves like NY Times */}
+      <div className="sticky top-0 z-20 border-b border-black/10 bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl overflow-hidden px-6 py-2">
+          <div className="flex animate-marquee whitespace-nowrap">
+            {stockPanel.tickers.map((item, index) => (
+              <div key={item.name} className="mx-4 inline-flex items-center gap-2">
+                <span className="font-semibold">{item.name}</span>
+                <span className={`font-semibold ${item.change.startsWith('+') ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {item.change}
+                </span>
+                <span className="text-xs text-zinc-500">{item.note}</span>
+                {index < stockPanel.tickers.length - 1 && (
+                  <span className="mx-2 text-zinc-300">•</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <main className="relative z-10 mx-auto max-w-7xl space-y-10 px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-8">
@@ -346,7 +366,7 @@ export default function Home() {
                       {section.articles.map((article) => (
                         <article
                           key={article.title}
-                          className="rounded-2xl border border-black/10 bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5"
+                          className="rounded-2xl bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5"
                         >
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
@@ -531,58 +551,37 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-black/10 bg-white/70 p-5 backdrop-blur-xl">
-              <div className="space-y-4">
+            <section className="sticky top-24 self-start rounded-3xl border border-black/10 bg-white/70 p-5 backdrop-blur-xl">
+              <div className="flex h-[480px] flex-col gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                    {stockPanel.title}
+                    AI Assistant
                   </p>
-                  <h3 className="mt-2 text-xl font-semibold">Market Watch</h3>
-                  <p className="mt-2 text-sm text-zinc-600">{stockPanel.summary}</p>
+                  <h3 className="mt-1 text-xl font-semibold">Chat with your brief</h3>
                 </div>
-                <div className="grid gap-3">
-                  {stockPanel.tickers.map((item) => (
-                    <div
-                      key={item.name}
-                      className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm"
-                    >
-                      <div>
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-xs text-zinc-500">{item.note}</p>
-                      </div>
-                      <p className="font-semibold text-emerald-600">{item.change}</p>
+                <div className="flex-1 overflow-hidden rounded-2xl border border-black/10 bg-white/80">
+                  <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
+                    <div className="max-w-[85%] rounded-2xl bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
+                      Morning! Want a quick summary or deeper context on any story?
                     </div>
-                  ))}
-                </div>
-                <div className="rounded-2xl border border-black/25 bg-gradient-to-br from-emerald-500/10 via-white/85 to-white p-4">
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
-                    Action
-                  </p>
-                  <div className="mt-3 space-y-3 text-sm text-zinc-700">
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.26em] text-zinc-500">
-                        Why it matters
-                      </p>
-                      <p className="mt-1">{stockPanel.relevance}</p>
+                    <div className="ml-auto max-w-[85%] rounded-2xl bg-zinc-900 px-4 py-3 text-sm text-white shadow-sm">
+                      Summarize the personal brief and suggest follow-ups.
                     </div>
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.26em] text-zinc-500">
-                        Why act now
-                      </p>
-                      <p className="mt-1">{stockPanel.actionReason}</p>
+                    <div className="max-w-[85%] rounded-2xl bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
+                      Your personal brief highlights the UIUC career fair opening, with registration
+                      closing Friday. I can pull related company profiles or add a reminder. Which
+                      follow-up do you want?
                     </div>
                   </div>
-                  <div className="mt-4 rounded-xl border border-black/15 bg-white/80 p-4">
-                    <p className="text-sm font-medium text-zinc-800">
-                      {stockPanel.action.label}
-                    </p>
-                    <div className="mt-3">
-                      <Button asChild size="sm">
-                        <Link href={stockPanel.action.href} target="_blank">
-                          {stockPanel.action.cta}
-                        </Link>
-                      </Button>
-                    </div>
+                </div>
+                <div className="rounded-2xl border border-black/15 bg-white/90 p-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      placeholder="Ask about today's coverage..."
+                      className="flex-1 bg-transparent text-sm placeholder:text-zinc-400 focus:outline-none"
+                    />
+                    <Button size="sm">Send</Button>
                   </div>
                 </div>
               </div>
