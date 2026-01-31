@@ -37,23 +37,18 @@ const INTERESTS = [
 ]
 
 export function OnboardingForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
-    const [step, setStep] = useState(1)
-    const totalSteps = 2
-    const [selectedInterests, setSelectedInterests] = useState<string[]>([])
-
     const searchParams = useSearchParams()
     const connectedAccountId = searchParams.get('connected_account_id')
+    const [step, setStep] = useState(() => (connectedAccountId ? 2 : 1))
+    const totalSteps = 2
+    const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+    const displayStep = connectedAccountId ? 2 : step
 
     useEffect(() => {
         console.log('--- TEST LOG: OnboardingForm mounted/updated.')
         console.log('All Search Params:', searchParams.toString())
         console.log('ConnectedAccountID:', connectedAccountId)
         if (connectedAccountId) {
-            // If we have a connectedAccountId, it means we just came back from Composio
-            // Set step to 2 automatically
-            setStep(2)
-
-            // Trigger fetch emails
             const fetchAndLog = async () => {
                 console.log('Detected connected account, fetching emails...')
                 try {
@@ -68,10 +63,10 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
             }
             fetchAndLog()
         }
-    }, [connectedAccountId])
+    }, [connectedAccountId, searchParams])
 
     // Format: (currentStep / totalSteps) * 100
-    const progress = (step / totalSteps) * 100
+    const progress = (displayStep / totalSteps) * 100
 
     const toggleInterest = (interestId: string) => {
         setSelectedInterests((prev) =>
@@ -83,7 +78,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
 
 
     const handleNext = () => {
-        if (step < totalSteps) {
+        if (!connectedAccountId && step < totalSteps) {
             setStep(step + 1)
         }
     }
@@ -94,7 +89,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
             try {
                 const result = await startGmailAuth(origin)
                 if (result.url) {
-                    window.location.href = result.url
+                    window.location.assign(result.url)
                 }
             } catch (error) {
                 console.error('Failed to start Gmail auth:', error)
@@ -114,7 +109,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
     }
 
     const handleBack = () => {
-        if (step > 1) {
+        if (!connectedAccountId && step > 1) {
             setStep(step - 1)
         }
     }
@@ -132,7 +127,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                     <div className="flex items-center justify-between">
                         <CardTitle>Onboarding</CardTitle>
                         <span className="text-sm text-muted-foreground">
-                            Step {step} of {totalSteps}
+                            Step {displayStep} of {totalSteps}
                         </span>
                     </div>
                     <Progress value={progress} className="h-2" />
@@ -144,7 +139,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                 </CardHeader>
                 <CardContent className="flex-1 overflow-auto">
                     <form onSubmit={handleSubmit} id="onboarding-form">
-                        {step === 1 && (
+                        {displayStep === 1 && (
                             <div className="grid gap-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
@@ -176,7 +171,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                             </div>
                         )}
 
-                        {step === 2 && (
+                        {displayStep === 2 && (
                             <div className="grid gap-4">
                                 <Label>Connect your accounts</Label>
                                 <div className="grid grid-cols-1 gap-4">
@@ -200,11 +195,11 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                     <Button
                         variant="outline"
                         onClick={handleBack}
-                        disabled={step === 1}
+                        disabled={displayStep === 1}
                     >
                         Back
                     </Button>
-                    {step < totalSteps ? (
+                    {displayStep < totalSteps ? (
                         <Button onClick={handleNext}>Next</Button>
                     ) : (
                         <Button type="submit" form="onboarding-form">

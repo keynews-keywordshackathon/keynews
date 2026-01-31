@@ -5,7 +5,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   Bot,
-  CalendarDays,
   CloudSun,
   Gamepad2,
   Globe2,
@@ -309,7 +308,7 @@ export default function Home() {
   return (
     <div
       id="top"
-      className="relative min-h-screen overflow-hidden bg-white text-zinc-900"
+      className="relative min-h-screen overflow-hidden paper-texture text-foreground"
     >
       <div className="pointer-events-none absolute inset-0" />
       <div
@@ -437,11 +436,12 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white/80 to-white p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
-                    <p className="text-[0.7rem] font-medium uppercase tracking-[0.32em] text-zinc-500">
+                  <div className="rounded-2xl border-2 border-emerald-500/30 bg-transparent p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
+                    <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
+                      <Sparkles className="size-3 text-emerald-600" />
                       Action
                     </p>
-                    <div className="mt-3 space-y-3 text-sm text-zinc-700">
+                    <div className="mt-4 space-y-4 text-sm text-zinc-700">
                       <div>
                         <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
                           Why it matters
@@ -515,72 +515,76 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <header className="relative z-10 border-b border-black/10 bg-white/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-zinc-600 shadow-sm">
-              <Sparkles className="size-4 text-zinc-500" />
-              AI Newspaper · Personalized · Live
+      <header className="relative z-10 border-b border-foreground/20 bg-transparent">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border py-3 text-xs text-muted-foreground">
+            <span className="dateline">Saturday, January 31, 2026</span>
+            <span className="section-label">Today&apos;s Paper</span>
+            <span className="dateline">S&amp;P 500 -0.43%</span>
+          </div>
+          <div className="grid items-center gap-4 py-6 md:grid-cols-[1fr_auto_1fr]">
+            <div className="hidden items-center gap-3 text-xs text-muted-foreground md:flex">
+              <span className="section-label">U.S.</span>
+              <span className="section-label">International</span>
+              <span className="section-label">Canada</span>
+              <span className="section-label">Español</span>
+              <span className="section-label">中文</span>
             </div>
-            <div className="space-y-2">
-              <h1 className="font-serif text-5xl font-bold tracking-tight md:text-6xl text-black">
+            <div className="text-center">
+              <h1 className="headline-masthead text-4xl text-foreground md:text-6xl">
                 Keynews Daily
               </h1>
-              <p className="max-w-2xl text-base text-zinc-600 md:text-lg">
-                A sleek, semi-transparent newsroom built for your signals, with bias-checked summaries and clear next steps.
+              <p className="section-label mt-2 text-muted-foreground">
+                AI Newspaper · Personalized · Live
               </p>
             </div>
+            <div className="flex items-center justify-end gap-3 text-xs text-muted-foreground">
+              <span className="dateline inline-flex items-center gap-2">
+                <MapPin className="size-4 text-muted-foreground" />
+                Urbana-Champaign
+              </span>
+              <span className="dateline inline-flex items-center gap-2">
+                <Newspaper className="size-4 text-muted-foreground" />
+                Edition 01
+              </span>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500">
-            <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2">
-              <MapPin className="size-4 text-zinc-400" />
-              Urbana-Champaign
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2">
-              <CalendarDays className="size-4 text-zinc-400" />
-              Saturday · 31 Jan
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2">
-              <Newspaper className="size-4 text-zinc-400" />
-              Edition 01
-            </span>
+          <div className="flex flex-wrap items-center justify-center gap-4 border-y border-border py-2 text-xs text-muted-foreground">
+            {[
+              { label: "Personal", href: "#personal" },
+              { label: "Local", href: "#local" },
+              { label: "Global", href: "#global" },
+              { label: "Weather", href: "#weather" },
+              { label: "Stocks", href: "#stocks" },
+              { label: "AI", href: "#agent-flow" },
+              { label: "Games", href: "#games" },
+              { label: "Actions", href: "#actions" },
+            ].map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="section-label hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
       </header>
 
-      {/* Stock ticker line - moves like NY Times */}
-      <div className="sticky top-0 z-20 border-b border-black/10 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl overflow-hidden px-6 py-2">
-          <div className="flex animate-marquee whitespace-nowrap">
-            {stockPanel.tickers.map((item, index) => (
-              <div key={item.name} className="mx-4 inline-flex items-center gap-2">
-                <span className="font-medium font-serif">{item.name}</span>
-                <span className={`font-medium ${item.change.startsWith('+') ? 'text-green-700' : 'text-red-700'}`}>
-                  {item.change}
-                </span>
-                <span className="text-xs text-zinc-500">{item.note}</span>
-                {index < stockPanel.tickers.length - 1 && (
-                  <span className="text-zinc-300">·</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <main className="relative z-10 mx-auto max-w-7xl space-y-10 px-6 py-10">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-8">
-            <section className="grid gap-6 py-8 lg:grid-cols-[2fr_1fr]">
-              <div className="space-y-4">
-                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                  <Sparkles className="size-4 text-zinc-600" />
+      <main className="relative z-10 mx-auto max-w-7xl space-y-4 px-4 py-4">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="space-y-4">
+            <section id="agent-flow" className="newspaper-border grid gap-4 p-4 lg:grid-cols-[2fr_1fr]">
+              <div className="space-y-3">
+                <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                  <Sparkles className="size-4 text-muted-foreground" />
                   High-Level Agent Flow
                 </p>
-                <h2 className="font-serif text-3xl font-bold md:text-4xl text-black">
+                <h2 className="headline-primary text-2xl text-foreground md:text-3xl">
                   Overview of personal, local, and global intelligence.
                 </h2>
-                <p className="text-base text-zinc-700">
+                <p className="article-body text-muted-foreground">
                   MCP signals, personal context, bias checks, and actionable recaps power each
                   section. Jump into the coverage below.
                 </p>
@@ -593,14 +597,14 @@ export default function Home() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="rounded-full border border-black/10 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-600 transition hover:bg-zinc-100"
+                      className="section-label border border-border px-3 py-2 text-muted-foreground transition hover:text-foreground"
                     >
                       {item.label}
                     </Link>
                   ))}
                 </div>
               </div>
-              <div className="grid gap-0 text-sm text-zinc-600">
+              <div className="grid gap-0 text-sm text-muted-foreground">
                 {[
                   "Personal feed drawn from calendar, inbox, and social signals",
                   "Local coverage tuned to location, weather, and community alerts",
@@ -609,68 +613,67 @@ export default function Home() {
                 ].map((item) => (
                   <div
                     key={item}
-                    className="flex items-center gap-3 border-b border-black/10 py-3 last:border-0"
+                    className="flex items-center gap-3 border-b border-border py-2 last:border-0"
                   >
-                    <span className="h-2 w-2 rounded-full bg-zinc-900" />
+                    <span className="h-2 w-2 bg-foreground" />
                     <span>{item}</span>
                   </div>
                 ))}
               </div>
             </section>
 
-            <section className="space-y-8">
+            <section className="space-y-4">
               {sections.map((section) => {
                 const SectionIcon = sectionIconMap[section.id as keyof typeof sectionIconMap];
                 return (
-                  <div key={section.id} id={section.id} className="py-8">
-                    <div className="mb-8 border-t border-black/10" />
+                  <div key={section.id} id={section.id} className="py-3">
+                    <div className="mb-2 border-t border-b border-border" />
                     
-                    <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
                       <div>
-                        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                          <SectionIcon className="size-4 text-zinc-600" />
+                        <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                          <SectionIcon className="size-4 text-muted-foreground" />
                           {section.title}
                         </p>
-                        <h3 className="mt-2 text-3xl font-bold font-serif text-black">{section.subtitle}</h3>
+                        <h3 className="headline-primary mt-1 text-2xl text-foreground">{section.subtitle}</h3>
                       </div>
                       <Link
                         href="#top"
-                        className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 transition hover:text-zinc-900"
+                        className="section-label inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground"
                       >
                         <ArrowUpRight className="size-4" />
                         Back to top
                       </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 divide-y divide-black/10 lg:grid-cols-2 lg:divide-y-0">
+                    <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-2 lg:divide-y-0">
                       {section.articles.map((article) => (
                         <article
                           key={article.title}
-                          className="py-8 transition hover:bg-zinc-50/30 lg:p-8 lg:border-b lg:border-black/10 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
+                          className="py-4 transition hover:bg-black/5 lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
                         >
-                          <div className="space-y-4">
+                          <div className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                               {article.images.map((image) => (
                                 <div
                                   key={`${article.title}-${image.label}`}
-                                  className={`relative h-28 overflow-hidden border border-black/10 bg-gradient-to-br ${image.tint} ${
+                                  className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${
                                     article.images.length === 1 ? "col-span-2" : ""
                                   }`}
                                 >
                                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-                                  <div className="relative z-10 flex h-full items-end p-3 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
+                                  <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
                                     {image.label}
                                   </div>
                                 </div>
                               ))}
                             </div>
-                            <div className="space-y-3">
-                              <h4 className="text-xl font-bold font-serif text-black">{article.title}</h4>
+                            <div className="space-y-2">
+                              <h4 className="headline-secondary text-lg text-foreground">{article.title}</h4>
                               <div className="relative">
-                                <p className="text-sm leading-6 text-zinc-700">
+                                <p className="article-body text-muted-foreground">
                                   {getPreviewText(article.summary)}
                                 </p>
-                                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/75 to-transparent" />
                               </div>
                               <div>
                                 <Button
@@ -682,15 +685,15 @@ export default function Home() {
                                   <ArrowUpRight className="size-4" />
                                 </Button>
                               </div>
-                              <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                                <span className="font-medium uppercase tracking-[0.2em]">
+                              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                <span className="section-label">
                                   Sources
                                 </span>
                                 {article.sources.map((source) => (
                                   <Link
                                     key={source.href}
                                     href={source.href}
-                                    className="rounded-full bg-white/80 px-3 py-1 transition hover:bg-white"
+                                    className="newspaper-border-thin px-3 py-1 transition hover:bg-black/5"
                                     target="_blank"
                                   >
                                     {source.label}
@@ -699,8 +702,9 @@ export default function Home() {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-5 rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white/80 to-white p-5 shadow-sm">
-                            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
+                          <div className="mt-4 rounded-2xl border-2 border-emerald-500/30 bg-transparent p-4 shadow-sm">
+                            <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
+                              <Sparkles className="size-3 text-emerald-600" />
                               Action
                             </p>
                             <div className="mt-3 space-y-3 text-sm text-zinc-700">
@@ -736,15 +740,15 @@ export default function Home() {
               })}
             </section>
 
-            <section className="py-8">
-              <div className="mb-8 border-t border-black/10" />
-              <div className="mb-8 flex flex-wrap items-start justify-between gap-6">
-                <div className="space-y-3">
-                  <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+            <section id="games" className="py-3">
+              <div className="mb-2 border-t border-b border-border" />
+              <div className="mb-2 flex flex-wrap items-start justify-between gap-6">
+                <div className="space-y-2">
+                  <p className="section-label text-muted-foreground">
                     Games
                   </p>
-                  <h3 className="text-3xl font-bold font-serif text-black">Daily Crossword</h3>
-                  <p className="text-sm text-zinc-600">
+                  <h3 className="headline-primary text-2xl text-foreground">Daily Crossword</h3>
+                  <p className="article-body text-muted-foreground">
                     Keep focus sharp with a quick puzzle tailored to your brief.
                   </p>
                 </div>
@@ -754,15 +758,15 @@ export default function Home() {
                 </Button>
               </div>
               <div className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
-                <div className="border border-black/10 p-5">
-                  <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
-                    <Gamepad2 className="size-4 text-zinc-600" />
+                <div className="newspaper-border-thin p-4">
+                  <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                    <Gamepad2 className="size-4 text-muted-foreground" />
                     Today&apos;s Game
                   </p>
-                  <p className="mt-2 text-sm text-zinc-600">
+                  <p className="article-body mt-2 text-muted-foreground">
                     15×15 grid with checks, reveals, and autosave.
                   </p>
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <Button
                       size="sm"
                       variant="ghost"
@@ -774,28 +778,28 @@ export default function Home() {
                     </Button>
                   </div>
                 </div>
-                <div className="border border-black/10 p-5">
-                  <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
-                    <TrendingUp className="size-4 text-zinc-600" />
+                <div className="newspaper-border-thin p-4">
+                  <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                    <TrendingUp className="size-4 text-muted-foreground" />
                     Progress
                   </p>
-                  <p className="mt-2 text-sm text-zinc-600">
+                  <p className="article-body mt-2 text-muted-foreground">
                     Timer control, quick checks, and clue navigation are ready.
                   </p>
                 </div>
               </div>
             </section>
 
-            <section className="py-8">
-              <div className="mb-8 border-t border-black/10" />
-              <div className="grid gap-6 lg:grid-cols-[1.5fr_2fr] lg:items-center">
-                <div className="space-y-3">
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                    <Sparkles className="size-4 text-zinc-600" />
+            <section id="actions" className="py-3">
+              <div className="mb-2 border-t border-b border-border" />
+              <div className="grid gap-4 lg:grid-cols-[1.2fr_2fr] lg:items-center">
+                <div className="space-y-2">
+                  <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                    <Sparkles className="size-4 text-muted-foreground" />
                     Personalized Actions
                   </p>
-                  <h3 className="text-3xl font-bold font-serif text-black">Next moves, already queued.</h3>
-                  <p className="text-sm text-zinc-600">
+                  <h3 className="headline-primary text-2xl text-foreground">Next moves, already queued.</h3>
+                  <p className="article-body text-muted-foreground">
                     Your homepage stays ready for contextual follow-ups like chat threads,
                     puzzle drops, and quick replies when breaking news changes.
                   </p>
@@ -825,10 +829,10 @@ export default function Home() {
                   ].map((item) => (
                     <div
                       key={item.title}
-                      className="border border-black/10 p-4 transition hover:bg-zinc-50"
+                      className="newspaper-border-thin p-3 transition hover:bg-black/5"
                     >
-                      <h4 className="text-sm font-bold font-serif text-black">{item.title}</h4>
-                      <p className="mt-2 text-sm text-zinc-600">{item.description}</p>
+                      <h4 className="headline-secondary text-sm text-foreground">{item.title}</h4>
+                      <p className="article-body mt-1 text-muted-foreground">{item.description}</p>
                     </div>
                   ))}
                 </div>
@@ -836,33 +840,34 @@ export default function Home() {
             </section>
           </div>
 
-          <aside className="space-y-6">
-            <section className="border border-black/10 p-5">
+          <aside className="space-y-4">
+            <section id="weather" className="newspaper-border p-4">
               <div className="space-y-4">
                 <div>
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                    <CloudSun className="size-4 text-zinc-600" />
+                  <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                    <CloudSun className="size-4 text-muted-foreground" />
                     {weatherPanel.title}
                   </p>
-                  <h3 className="mt-2 text-2xl font-bold font-serif text-black">{weatherPanel.location}</h3>
-                  <p className="mt-2 text-sm text-zinc-600">{weatherPanel.summary}</p>
+                  <h3 className="headline-secondary mt-2 text-2xl text-foreground">{weatherPanel.location}</h3>
+                  <p className="article-body mt-2 text-muted-foreground">{weatherPanel.summary}</p>
                 </div>
                 <div className="grid gap-0">
                   {weatherPanel.forecast.map((item) => (
                     <div
                       key={item.day}
-                      className="flex items-center justify-between border-b border-black/10 py-3 text-sm last:border-0"
+                      className="flex items-center justify-between border-b border-border py-3 text-sm last:border-0"
                     >
                       <div>
                         <p className="font-semibold">{item.day}</p>
-                        <p className="text-xs text-zinc-500">{item.note}</p>
+                        <p className="text-xs text-muted-foreground">{item.note}</p>
                       </div>
-                      <p className="font-semibold text-zinc-700">{item.temp}</p>
+                      <p className="font-semibold text-foreground">{item.temp}</p>
                     </div>
                   ))}
                 </div>
-                <div className="rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white/85 to-white p-4">
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
+                <div className="rounded-2xl border-2 border-emerald-500/30 bg-transparent p-4">
+                  <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
+                    <Sparkles className="size-3 text-emerald-600" />
                     Action
                   </p>
                   <div className="mt-3 space-y-3 text-sm text-zinc-700">
@@ -895,14 +900,48 @@ export default function Home() {
               </div>
             </section>
 
-            <div className="rounded-2xl bg-white/80 p-4 backdrop-blur-xl">
+            <div className="border-t border-b border-border" />
+
+            <section id="stocks" className="newspaper-border p-4">
+              <div className="space-y-3">
+                <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                  <TrendingUp className="size-4 text-muted-foreground" />
+                  {stockPanel.title}
+                </p>
+                <div className="space-y-2">
+                  {stockPanel.tickers.map((item) => (
+                    <div key={item.name} className="flex items-center justify-between text-sm">
+                      <span className="font-medium font-serif">{item.name}</span>
+                      <div className="flex items-center gap-2">
+                         <span className={`font-medium ${item.change.startsWith('+') ? 'text-green-700' : 'text-red-700'}`}>
+                          {item.change}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="article-body mt-2 text-xs text-muted-foreground">{stockPanel.summary}</p>
+                 <div className="mt-3">
+                    <Link
+                      href={stockPanel.action.href}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 transition hover:text-emerald-600"
+                    >
+                      <ArrowRight className="size-3" />
+                      {stockPanel.action.label}
+                    </Link>
+                  </div>
+              </div>
+            </section>
+
+            <div className="newspaper-border-thin bg-transparent p-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                    <Bot className="size-4 text-zinc-600" />
+                  <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                    <Bot className="size-4 text-muted-foreground" />
                     AI Assistant
                   </p>
-                  <p className="mt-1 text-sm text-zinc-600">
+                  <p className="article-body mt-1 text-muted-foreground">
                     Open the assistant for quick analysis.
                   </p>
                 </div>

@@ -1,19 +1,16 @@
 "use client";
 
 import type { WordGroup } from "@/lib/connections/types";
-import { DIFFICULTY_COLORS, DIFFICULTY_ORDER } from "@/lib/connections/types";
 
 interface GameOverlayProps {
     status: "won" | "lost";
     solvedGroups: WordGroup[];
-    allGroups: WordGroup[];
     onClose: () => void;
 }
 
 export function GameOverlay({
     status,
     solvedGroups,
-    allGroups,
     onClose,
 }: GameOverlayProps) {
     const isWon = status === "won";
