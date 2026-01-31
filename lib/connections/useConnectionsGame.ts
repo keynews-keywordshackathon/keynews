@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { Puzzle, WordGroup, GameState } from "./types";
 import { getAllWords, shuffleArray } from "./puzzles";
 import { DIFFICULTY_ORDER } from "./types";
@@ -42,26 +42,19 @@ function createInitialState(puzzle: Puzzle): GameState {
 }
 
 export function useConnectionsGame(puzzle: Puzzle) {
-    // Start with fresh state (don't access localStorage during SSR)
-    const [gameState, setGameState] = useState<GameState>(() => createInitialState(puzzle));
-    
-    // Track loading state
-    const hasLoadedRef = useRef(false);
-
-    // Load saved state on client mount (only once)
-    useEffect(() => {
-        if (hasLoadedRef.current) return;
-        hasLoadedRef.current = true;
+    const [gameState, setGameState] = useState<GameState>(() => {
+        if (typeof window === "undefined") {
+            return createInitialState(puzzle);
+        }
 
         try {
-            const raw = localStorage.getItem(STORAGE_PREFIX + puzzle.id);
+            const raw = window.localStorage.getItem(STORAGE_PREFIX + puzzle.id);
             if (raw) {
                 const saved = JSON.parse(raw) as SavedState;
-                
-                // Restore full WordGroup objects from puzzle by matching category
+
                 const categoryToGroup = new Map(puzzle.groups.map((g) => [g.category, g]));
                 const restoredGroups: WordGroup[] = [];
-                
+
                 for (const category of saved.solvedCategories || []) {
                     const group = categoryToGroup.get(category);
                     if (group) {
@@ -69,29 +62,29 @@ export function useConnectionsGame(puzzle: Puzzle) {
                     }
                 }
 
-                // Calculate remaining words based on restored groups (don't trust saved remainingWords)
                 const solvedWords = new Set(restoredGroups.flatMap((g) => g.words));
                 const allWords = puzzle.groups.flatMap((g) => g.words);
                 const remainingWords = allWords.filter((w) => !solvedWords.has(w));
 
-                // Only restore if we have valid saved data
                 if (saved.gameStatus) {
-                    setGameState({
+                    return {
                         puzzle,
                         remainingWords: remainingWords.length > 0 ? shuffleArray(remainingWords) : [],
-                        selectedWords: [], // Always clear selections on load
+                        selectedWords: [],
                         solvedGroups: restoredGroups,
                         mistakesRemaining: saved.mistakesRemaining ?? MAX_MISTAKES,
                         guessedCombinations: saved.guessedCombinations || [],
                         gameStatus: saved.gameStatus,
                         message: null,
-                    });
+                    };
                 }
             }
         } catch {
-            // Invalid data, ignore
+            return createInitialState(puzzle);
         }
-    }, [puzzle]);
+
+        return createInitialState(puzzle);
+    });
 
     // Helper to save state
     const saveState = useCallback((state: GameState) => {

@@ -201,5 +201,133 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
   }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-playfair), Georgia, serif;
+  }
+}
+
+.font-newspaper {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+.font-body {
+  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.headline-masthead {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.headline-primary {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.headline-secondary {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.article-body {
+  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 4rem;
+  line-height: 0.8;
+  padding-right: 0.5rem;
+  padding-top: 0.2rem;
+  font-weight: 700;
+}
+
+.newspaper-border {
+  border: 2px solid hsl(var(--foreground));
+}
+
+.newspaper-border-thin {
+  border: 1px solid hsl(var(--border));
+}
+
+.double-border {
+  border-top: 3px double hsl(var(--foreground));
+  border-bottom: 3px double hsl(var(--foreground));
+}
+
+.double-border-top {
+  border-top: 3px double hsl(var(--foreground));
+}
+
+.double-border-bottom {
+  border-bottom: 3px double hsl(var(--foreground));
+}
+
+.paper-texture {
+  background-color: hsl(40 20% 97%);
+  background-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.02) 50%, transparent 100%),
+    linear-gradient(0deg, transparent 0%, rgba(0,0,0,0.02) 50%, transparent 100%);
+}
+
+.section-label {
+  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.byline {
+  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.dateline {
+  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.caption {
+  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(40 20% 95%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(30 10% 60%);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(30 10% 40%);
 }

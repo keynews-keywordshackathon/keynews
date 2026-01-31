@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useConnectionsGame } from "@/lib/connections/useConnectionsGame";
 import type { Puzzle } from "@/lib/connections/types";
 import { WordGrid } from "./WordGrid";
@@ -25,18 +25,11 @@ export function ConnectionsGame({ puzzle }: ConnectionsGameProps) {
         resetGame,
         canSubmit,
         canDeselectAll,
-        allGroups,
     } = useConnectionsGame(puzzle);
 
     const isGameOver = gameState.gameStatus !== "playing";
-    const [showOverlay, setShowOverlay] = useState(false);
-
-    // Show overlay when game ends
-    useEffect(() => {
-        if (isGameOver) {
-            setShowOverlay(true);
-        }
-    }, [isGameOver]);
+    const [dismissedOverlay, setDismissedOverlay] = useState(false);
+    const showOverlay = isGameOver && !dismissedOverlay;
 
     return (
         <div className="w-full max-w-2xl mx-auto p-4 space-y-4">
@@ -109,19 +102,21 @@ export function ConnectionsGame({ puzzle }: ConnectionsGameProps) {
             )}
 
             {/* Game Over Overlay */}
-            {isGameOver && showOverlay && (
+            {showOverlay && (
                 <GameOverlay
                     status={gameState.gameStatus as "won" | "lost"}
                     solvedGroups={gameState.solvedGroups}
-                    allGroups={allGroups}
-                    onClose={() => setShowOverlay(false)}
+                    onClose={() => setDismissedOverlay(true)}
                 />
             )}
 
             {/* Debug Reset Button */}
             <div className="pt-8 flex justify-center">
                 <button
-                    onClick={resetGame}
+                    onClick={() => {
+                        setDismissedOverlay(false);
+                        resetGame();
+                    }}
                     className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
                 >
                     Reset Game (Debug)
