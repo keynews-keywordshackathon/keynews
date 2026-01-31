@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { startGmailAuth, fetchEmails } from '@/actions/composio'
+import { startGmailAuth, startCalendarAuth, fetchEmails } from '@/actions/composio'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -89,14 +89,24 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
     }
 
     const handleIntegrationClick = async (platform: string) => {
+        const origin = typeof window !== 'undefined' ? window.location.origin : undefined
         if (platform === 'Gmail') {
             try {
-                const result = await startGmailAuth()
+                const result = await startGmailAuth(origin)
                 if (result.url) {
                     window.location.href = result.url
                 }
             } catch (error) {
                 console.error('Failed to start Gmail auth:', error)
+            }
+        } else if (platform === 'Google Calendar') {
+            try {
+                const result = await startCalendarAuth(origin)
+                if (result.url) {
+                    window.location.href = result.url
+                }
+            } catch (error) {
+                console.error('Failed to start Calendar auth:', error)
             }
         } else {
             console.log('Clicked', platform)

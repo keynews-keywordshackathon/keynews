@@ -12,9 +12,10 @@ import { getComposioClient, getOpenAIClient } from './shared'
 
 /**
  * Start Google Calendar OAuth authentication flow for the current user
+ * @param origin Optional base URL (e.g. from window.location.origin) so redirect lands on the right port
  * @returns Object containing the redirect URL for OAuth
  */
-export async function startCalendarAuth() {
+export async function startCalendarAuth(origin?: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -32,13 +33,14 @@ export async function startCalendarAuth() {
         throw new Error('COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID not found. Please set it in your .env file.')
     }
 
+    const baseUrl = origin || 'http://localhost:3000'
+    const callbackUrl = `${baseUrl.replace(/\/$/, '')}/onboarding`
+
     try {
         const connectionRequest = await client.connectedAccounts.link(
             entityId,
             authConfigId,
-            {
-                callbackUrl: 'http://localhost:3000/onboarding'
-            }
+            { callbackUrl }
         )
 
         if (connectionRequest.redirectUrl) {
