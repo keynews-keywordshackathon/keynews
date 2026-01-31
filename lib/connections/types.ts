@@ -6,6 +6,7 @@ export interface WordGroup {
     category: string;
     words: string[];
     difficulty: Difficulty;
+    clue?: string;
 }
 
 export interface Puzzle {

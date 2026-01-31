@@ -1,0 +1,50 @@
+{
+    "id": "2026-01-31",
+    "date": "2026-01-31",
+    "groups": [
+        {
+            "category": "PARTY TYPES",
+            "words": [
+                "BALL",
+                "MIXER",
+                "RECEPTION",
+                "SHOWER"
+            ],
+            "difficulty": "yellow",
+            "clue": "These gatherings bring people together for social events"
+        },
+        {
+            "category": "THINGS WITH DRUMS",
+            "words": [
+                "DRYER",
+                "EAR",
+                "KIT",
+                "WASHING MACHINE"
+            ],
+            "difficulty": "green",
+            "clue": "You might find a rotating cylinder in these items"
+        },
+        {
+            "category": "_____ ROLL",
+            "words": [
+                "BARREL",
+                "HONOR",
+                "ROCK AND",
+                "TOILET PAPER"
+            ],
+            "difficulty": "blue",
+            "clue": "Complete the phrase with this suffix"
+        },
+        {
+            "category": "FASHION DESIGNERS",
+            "words": [
+                "BANKS",
+                "JACOBS",
+                "KORS",
+                "WANG"
+            ],
+            "difficulty": "purple",
+            "clue": "Famous last names in the fashion industry"
+        }
+    ]
+}

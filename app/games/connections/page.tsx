@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ConnectionsGame } from "@/components/connections/ConnectionsGame";
-import { getTodaysPuzzle } from "@/lib/connections/puzzles";
+import { getTodaysPuzzle } from "@/lib/connections/puzzles.server";
 
 export default async function ConnectionsPage() {
     const supabase = await createClient();
@@ -11,7 +11,7 @@ export default async function ConnectionsPage() {
         redirect("/auth/login");
     }
 
-    const puzzle = getTodaysPuzzle();
+    const puzzle = await getTodaysPuzzle();
 
     return (
         <main className="min-h-svh py-8 bg-white">
