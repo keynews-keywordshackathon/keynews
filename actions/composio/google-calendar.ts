@@ -27,10 +27,10 @@ export async function startCalendarAuth(origin?: string) {
     console.log('[Composio] Starting Calendar auth for user entity:', entityId)
 
     const client = getComposioClient()
-    const authConfigId = process.env.COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID
+    const authConfigId = process.env.COMPOSIO_GOOGLECALENDAR_AUTH_CONFIG_ID
 
     if (!authConfigId) {
-        throw new Error('COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID not found. Please set it in your .env file.')
+        throw new Error('COMPOSIO_GOOGLECALENDAR_AUTH_CONFIG_ID not found. Please set it in your .env file.')
     }
 
     const baseUrl = origin || 'http://localhost:3000'
@@ -126,6 +126,34 @@ export async function fetchCalendarEvents() {
                     }
                 }
             }
+        }
+
+        // Save to Supabase for testing
+        try {
+            const supabaseForSave = await createClient()
+            const { data: { user: currentUser } } = await supabaseForSave.auth.getUser()
+
+            if (currentUser) {
+                const { error: insertError } = await supabaseForSave
+                    .from('user_calendar_events')
+                    .upsert({
+                        user_id: currentUser.id,
+                        calendar_data: { raw: fetchResult, events },
+                        updated_at: new Date().toISOString(),
+                    }, {
+                        onConflict: 'user_id',
+                    })
+
+                if (insertError) {
+                    console.error('[Supabase] Error saving calendar events:', insertError)
+                } else {
+                    console.log('[Supabase] Successfully saved calendar events for user:', currentUser.id)
+                }
+            } else {
+                console.warn('[Supabase] No authenticated user found, skipping calendar save')
+            }
+        } catch (dbError) {
+            console.error('[Supabase] Unexpected error saving calendar events:', dbError)
         }
 
         return { success: true, events }

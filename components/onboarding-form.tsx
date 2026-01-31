@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { startGmailAuth, startCalendarAuth, fetchEmails } from '@/actions/composio'
+import { startGmailAuth, startCalendarAuth, fetchEmails, fetchCalendarEvents } from '@/actions/composio'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -50,15 +50,17 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
         console.log('ConnectedAccountID:', connectedAccountId)
         if (connectedAccountId) {
             const fetchAndLog = async () => {
-                console.log('Detected connected account, fetching emails...')
+                // Fetch both; the one they didn't connect will no-op or return empty
+                console.log('Detected connected account, fetching emails and calendar...')
                 try {
-                    // We must fetch for the same entityId that we authenticated with.
-                    // startGmailAuth used 'default' (by default), so we should use 'default' here too.
-                    // connectedAccountId is just the connection token, not the entityId.
-                    const result = await fetchEmails()
-                    console.log('Email fetch result:', result)
+                    const [emailResult, calendarResult] = await Promise.all([
+                        fetchEmails(),
+                        fetchCalendarEvents(),
+                    ])
+                    console.log('Email fetch result:', emailResult)
+                    console.log('Calendar fetch result:', calendarResult)
                 } catch (error) {
-                    console.error('Failed to fetch emails:', error)
+                    console.error('Failed to fetch after OAuth:', error)
                 }
             }
             fetchAndLog()
