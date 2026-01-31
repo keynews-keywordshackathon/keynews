@@ -85,7 +85,7 @@ const sections = [
           cta: "Start team",
           href: "https://www.hackillinois.org/",
         },
-      },
+      }
     ],
   },
   {
@@ -208,6 +208,34 @@ const sections = [
           label: "Audit your project and generate an SBOM.",
           cta: "See tools",
           href: "https://openssf.org/",
+        },
+      },
+      {
+        title: "Quantum computing milestones reach practical applications",
+        summary:
+          "Recent breakthroughs in quantum error correction and qubit stability have moved quantum computing closer to practical applications. Several research labs demonstrated fault-tolerant operations with logical qubits, reducing error rates significantly. Industry partnerships are forming to explore quantum algorithms for drug discovery and materials science. Your reading history includes quantum computing updates, making this highly relevant. Major tech companies are hosting workshops on quantum programming frameworks next month.",
+        relevance:
+          "Your saved interests include quantum computing and advanced computing architectures.",
+        actionReason:
+          "Early understanding of quantum programming frameworks can provide a competitive edge.",
+        images: [
+          {
+            label: "Quantum lab",
+            tint: "from-amber-500/25 via-white/85 to-white",
+          },
+          {
+            label: "Algorithm visualization",
+            tint: "from-rose-500/20 via-white/85 to-white",
+          },
+        ],
+        sources: [
+          { label: "Quantum Computing Report", href: "https://quantumcomputingreport.com/" },
+          { label: "IBM Quantum", href: "https://quantum.ibm.com/" },
+        ],
+        action: {
+          label: "Explore quantum programming tutorials and sign up for workshops.",
+          cta: "Learn quantum",
+          href: "https://quantum.ibm.com/",
         },
       },
     ],
