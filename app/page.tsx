@@ -28,7 +28,7 @@ const sections = [
     id: "personal",
     title: "Personal",
     subtitle: "Signals from your calendar, inbox, and subscriptions",
-    accent: "from-indigo-500/20 via-sky-500/10 to-transparent",
+    accent: "from-zinc-200/50 via-zinc-100/30 to-transparent",
     articles: [
       {
         title: "UIUC Career Fair slots open for AI-focused teams",
@@ -41,11 +41,11 @@ const sections = [
         images: [
           {
             label: "Career fair hall",
-            tint: "from-indigo-500/30 via-white/85 to-white",
+            tint: "from-zinc-500/20 via-white/90 to-white",
           },
           {
             label: "Resume workshop",
-            tint: "from-sky-500/25 via-white/85 to-white",
+            tint: "from-zinc-400/20 via-white/90 to-white",
           },
         ],
         sources: [
@@ -69,11 +69,11 @@ const sections = [
         images: [
           {
             label: "Hackathon briefing",
-            tint: "from-violet-500/30 via-white/85 to-white",
+            tint: "from-zinc-600/20 via-white/90 to-white",
           },
           {
             label: "Team workspace",
-            tint: "from-indigo-500/20 via-white/85 to-white",
+            tint: "from-zinc-500/20 via-white/90 to-white",
           },
         ],
         sources: [
@@ -92,7 +92,7 @@ const sections = [
     id: "local",
     title: "Local",
     subtitle: "What’s happening around your city",
-    accent: "from-emerald-500/20 via-lime-500/10 to-transparent",
+    accent: "from-zinc-200/50 via-zinc-100/30 to-transparent",
     articles: [
       {
         title: "Colder stretch arrives midweek with overnight lows",
@@ -105,11 +105,11 @@ const sections = [
         images: [
           {
             label: "Windy streets",
-            tint: "from-emerald-500/25 via-white/85 to-white",
+            tint: "from-zinc-500/20 via-white/90 to-white",
           },
           {
             label: "Winter gear",
-            tint: "from-lime-500/20 via-white/85 to-white",
+            tint: "from-zinc-400/20 via-white/90 to-white",
           },
         ],
         sources: [
@@ -133,7 +133,7 @@ const sections = [
         images: [
           {
             label: "Late bus route",
-            tint: "from-emerald-500/20 via-white/85 to-white",
+            tint: "from-zinc-500/20 via-white/90 to-white",
           },
         ],
         sources: [
@@ -152,7 +152,7 @@ const sections = [
     id: "global",
     title: "National & Global",
     subtitle: "Broader signals tailored to your interests",
-    accent: "from-amber-500/20 via-rose-500/10 to-transparent",
+    accent: "from-zinc-200/50 via-zinc-100/30 to-transparent",
     articles: [
       {
         title: "New AI governance framework emphasizes provenance",
@@ -165,11 +165,11 @@ const sections = [
         images: [
           {
             label: "Policy briefing",
-            tint: "from-amber-500/25 via-white/85 to-white",
+            tint: "from-zinc-500/20 via-white/90 to-white",
           },
           {
             label: "Research lab",
-            tint: "from-rose-500/20 via-white/85 to-white",
+            tint: "from-zinc-400/20 via-white/90 to-white",
           },
         ],
         sources: [
@@ -193,11 +193,11 @@ const sections = [
         images: [
           {
             label: "Dependency graph",
-            tint: "from-amber-500/20 via-white/85 to-white",
+            tint: "from-zinc-500/20 via-white/90 to-white",
           },
           {
             label: "CI pipeline",
-            tint: "from-rose-500/20 via-white/85 to-white",
+            tint: "from-zinc-400/20 via-white/90 to-white",
           },
         ],
         sources: [
@@ -221,11 +221,11 @@ const sections = [
         images: [
           {
             label: "Quantum lab",
-            tint: "from-amber-500/25 via-white/85 to-white",
+            tint: "from-zinc-500/20 via-white/90 to-white",
           },
           {
             label: "Algorithm visualization",
-            tint: "from-rose-500/20 via-white/85 to-white",
+            tint: "from-zinc-400/20 via-white/90 to-white",
           },
         ],
         sources: [
@@ -309,10 +309,8 @@ export default function Home() {
   return (
     <div
       id="top"
-      className="relative min-h-screen overflow-hidden bg-[#f6f4f0] text-zinc-900"
+      className="relative min-h-screen overflow-hidden bg-zinc-50 text-zinc-900"
     >
-      <div className="pointer-events-none absolute -top-40 right-[-10%] h-[30rem] w-[30rem] rounded-full bg-indigo-500/30 blur-3xl animate-[float_18s_ease-in-out_infinite]" />
-      <div className="pointer-events-none absolute -bottom-32 left-[-10%] h-[26rem] w-[26rem] rounded-full bg-amber-400/25 blur-3xl animate-[float_22s_ease-in-out_infinite]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.6),_transparent_55%)]" />
       <div
         className={`fixed inset-0 z-40 ${
@@ -398,7 +396,7 @@ export default function Home() {
                   <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
                     Full Story
                   </p>
-                  <h3 className="mt-1 text-lg font-medium">{activeArticle.title}</h3>
+                  <h3 className="mt-1 text-2xl font-bold font-serif text-black">{activeArticle.title}</h3>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => setActiveArticle(null)}>
                   Close
@@ -422,7 +420,7 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="space-y-6">
-                    <p className="text-xl leading-relaxed text-zinc-800">
+                    <p className="text-xl leading-relaxed text-zinc-800 font-serif">
                       {activeArticle.summary}
                     </p>
                     <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
@@ -439,7 +437,7 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl border-2 border-emerald-500/40 bg-white/30 p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
+                  <div className="rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white/80 to-white p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
                     <p className="text-[0.7rem] font-medium uppercase tracking-[0.32em] text-zinc-500">
                       Action
                     </p>
@@ -461,7 +459,7 @@ export default function Home() {
                       <Link
                         href={activeArticle.action.href}
                         target="_blank"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-500"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
                       >
                         <ArrowRight className="size-4" />
                         {activeArticle.action.label}
@@ -525,7 +523,7 @@ export default function Home() {
               AI Newspaper · Personalized · Live
             </div>
             <div className="space-y-2">
-              <h1 className="text-4xl font-medium tracking-tight md:text-5xl">
+              <h1 className="font-serif text-5xl font-bold tracking-tight md:text-6xl text-black">
                 Keynews Daily
               </h1>
               <p className="max-w-2xl text-base text-zinc-600 md:text-lg">
@@ -556,8 +554,8 @@ export default function Home() {
           <div className="flex animate-marquee whitespace-nowrap">
             {stockPanel.tickers.map((item, index) => (
               <div key={item.name} className="mx-4 inline-flex items-center gap-2">
-                <span className="font-medium">{item.name}</span>
-                <span className={`font-medium ${item.change.startsWith('+') ? 'text-emerald-600' : 'text-red-600'}`}>
+                <span className="font-medium font-serif">{item.name}</span>
+                <span className={`font-medium ${item.change.startsWith('+') ? 'text-green-700' : 'text-red-700'}`}>
                   {item.change}
                 </span>
                 <span className="text-xs text-zinc-500">{item.note}</span>
@@ -573,16 +571,16 @@ export default function Home() {
       <main className="relative z-10 mx-auto max-w-7xl space-y-10 px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-8">
-            <section className="grid gap-6 rounded-3xl border border-black/10 bg-white/60 p-6 backdrop-blur-xl lg:grid-cols-[2fr_1fr]">
+            <section className="grid gap-6 rounded-3xl border border-black/10 bg-white/80 p-6 backdrop-blur-xl lg:grid-cols-[2fr_1fr]">
               <div className="space-y-4">
                 <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                  <Sparkles className="size-4 text-zinc-400" />
+                  <Sparkles className="size-4 text-zinc-600" />
                   High-Level Agent Flow
                 </p>
-                <h2 className="text-2xl font-semibold md:text-3xl">
+                <h2 className="font-serif text-3xl font-bold md:text-4xl text-black">
                   Overview of personal, local, and global intelligence.
                 </h2>
-                <p className="text-base text-zinc-600">
+                <p className="text-base text-zinc-700">
                   MCP signals, personal context, bias checks, and actionable recaps power each
                   section. Jump into the coverage below.
                 </p>
@@ -624,37 +622,31 @@ export default function Home() {
               {sections.map((section) => {
                 const SectionIcon = sectionIconMap[section.id as keyof typeof sectionIconMap];
                 return (
-                  <div
-                    key={section.id}
-                    id={section.id}
-                    className="group relative overflow-hidden rounded-3xl border border-black/10 bg-white/65 p-6 shadow-[0_25px_60px_-45px_rgba(15,23,42,0.6)] backdrop-blur-xl transition hover:-translate-y-1"
-                  >
-                    <div
-                      className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${section.accent}`}
-                    />
-                    <div className="relative z-10 space-y-6">
-                      <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div>
-                          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                            <SectionIcon className="size-4 text-zinc-400" />
-                            {section.title}
-                          </p>
-                          <h3 className="mt-2 text-2xl font-semibold">{section.subtitle}</h3>
-                        </div>
-                        <Link
-                          href="#top"
-                          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 transition hover:text-zinc-900"
-                        >
-                          <ArrowUpRight className="size-4" />
-                          Back to top
-                        </Link>
+                  <div key={section.id} id={section.id} className="py-8">
+                    <div className="mb-8 border-t border-black/10" />
+                    
+                    <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                          <SectionIcon className="size-4 text-zinc-600" />
+                          {section.title}
+                        </p>
+                        <h3 className="mt-2 text-3xl font-bold font-serif text-black">{section.subtitle}</h3>
                       </div>
+                      <Link
+                        href="#top"
+                        className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 transition hover:text-zinc-900"
+                      >
+                        <ArrowUpRight className="size-4" />
+                        Back to top
+                      </Link>
+                    </div>
 
                     <div className="grid gap-6 lg:grid-cols-2">
                       {section.articles.map((article) => (
                         <article
                           key={article.title}
-                          className="rounded-2xl border border-white/30 bg-white/55 p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl transition hover:-translate-y-0.5"
+                          className="rounded-2xl border border-black/5 bg-white/80 p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl transition hover:-translate-y-0.5"
                         >
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
@@ -673,9 +665,9 @@ export default function Home() {
                               ))}
                             </div>
                             <div className="space-y-3">
-                              <h4 className="text-lg font-medium">{article.title}</h4>
+                              <h4 className="text-xl font-bold font-serif text-black">{article.title}</h4>
                               <div className="relative">
-                                <p className="text-sm leading-6 text-zinc-600">
+                                <p className="text-sm leading-6 text-zinc-700">
                                   {getPreviewText(article.summary)}
                                 </p>
                                 <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/75 to-transparent" />
@@ -707,7 +699,7 @@ export default function Home() {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-5 rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-zinc-900/5 via-white/80 to-white p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)]">
+                          <div className="mt-5 rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white/80 to-white p-5 shadow-sm">
                             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
                               Action
                             </p>
@@ -729,7 +721,7 @@ export default function Home() {
                               <Link
                                 href={article.action.href}
                                 target="_blank"
-                                className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-500"
+                                className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
                               >
                                 <ArrowRight className="size-4" />
                                 {article.action.label}
@@ -740,18 +732,18 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                  </div>
                 );
               })}
             </section>
 
-            <section className="rounded-3xl border border-black/10 bg-white/70 px-6 py-8 backdrop-blur-xl">
-              <div className="flex flex-wrap items-start justify-between gap-6">
+            <section className="py-8">
+              <div className="mb-8 border-t border-black/10" />
+              <div className="mb-8 flex flex-wrap items-start justify-between gap-6">
                 <div className="space-y-3">
                   <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
                     Games
                   </p>
-                  <h3 className="text-2xl font-medium">Daily Crossword</h3>
+                  <h3 className="text-3xl font-bold font-serif text-black">Daily Crossword</h3>
                   <p className="text-sm text-zinc-600">
                     Keep focus sharp with a quick puzzle tailored to your brief.
                   </p>
@@ -761,10 +753,10 @@ export default function Home() {
                   Open crossword
                 </Button>
               </div>
-              <div className="mt-6 grid gap-4 md:grid-cols-[1.2fr_1fr]">
-                <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-white/85 to-white p-5">
+              <div className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
+                <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl">
                   <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
-                    <Gamepad2 className="size-4 text-zinc-400" />
+                    <Gamepad2 className="size-4 text-zinc-600" />
                     Today&apos;s Game
                   </p>
                   <p className="mt-2 text-sm text-zinc-600">
@@ -784,7 +776,7 @@ export default function Home() {
                 </div>
                 <div className="rounded-2xl border border-black/10 bg-white/80 p-5">
                   <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
-                    <TrendingUp className="size-4 text-zinc-400" />
+                    <TrendingUp className="size-4 text-zinc-600" />
                     Progress
                   </p>
                   <p className="mt-2 text-sm text-zinc-600">
@@ -794,14 +786,15 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-black/10 bg-white/70 px-6 py-8 backdrop-blur-xl">
+            <section className="py-8">
+              <div className="mb-8 border-t border-black/10" />
               <div className="grid gap-6 lg:grid-cols-[1.5fr_2fr] lg:items-center">
                 <div className="space-y-3">
                   <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                    <Sparkles className="size-4 text-zinc-400" />
+                    <Sparkles className="size-4 text-zinc-600" />
                     Personalized Actions
                   </p>
-                  <h3 className="text-2xl font-semibold">Next moves, already queued.</h3>
+                  <h3 className="text-3xl font-bold font-serif text-black">Next moves, already queued.</h3>
                   <p className="text-sm text-zinc-600">
                     Your homepage stays ready for contextual follow-ups like chat threads,
                     puzzle drops, and quick replies when breaking news changes.
@@ -832,9 +825,9 @@ export default function Home() {
                   ].map((item) => (
                     <div
                       key={item.title}
-                      className="rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5"
+                      className="rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5"
                     >
-                      <h4 className="text-sm font-semibold">{item.title}</h4>
+                      <h4 className="text-sm font-bold font-serif text-black">{item.title}</h4>
                       <p className="mt-2 text-sm text-zinc-600">{item.description}</p>
                     </div>
                   ))}
@@ -844,14 +837,14 @@ export default function Home() {
           </div>
 
           <aside className="space-y-6">
-            <section className="rounded-3xl border border-black/10 bg-white/70 p-5 backdrop-blur-xl">
+            <section className="rounded-3xl border border-black/10 bg-white/80 p-5 backdrop-blur-xl">
               <div className="space-y-4">
                 <div>
                   <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                    <CloudSun className="size-4 text-zinc-400" />
+                    <CloudSun className="size-4 text-zinc-600" />
                     {weatherPanel.title}
                   </p>
-                  <h3 className="mt-2 text-xl font-medium">{weatherPanel.location}</h3>
+                  <h3 className="mt-2 text-2xl font-bold font-serif text-black">{weatherPanel.location}</h3>
                   <p className="mt-2 text-sm text-zinc-600">{weatherPanel.summary}</p>
                 </div>
                 <div className="grid gap-3">
@@ -868,7 +861,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-sky-500/10 via-white/85 to-white p-4">
+                <div className="rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 via-white/85 to-white p-4">
                   <p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
                     Action
                   </p>
@@ -891,7 +884,7 @@ export default function Home() {
                       {weatherPanel.action.label}
                     </p>
                     <div className="mt-3">
-                      <Button asChild size="sm">
+                      <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                         <Link href={weatherPanel.action.href} target="_blank">
                           {weatherPanel.action.cta}
                         </Link>
@@ -902,11 +895,11 @@ export default function Home() {
               </div>
             </section>
 
-            <div className="rounded-2xl bg-white/60 p-4 backdrop-blur-xl">
+            <div className="rounded-2xl bg-white/80 p-4 backdrop-blur-xl">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                    <Bot className="size-4 text-zinc-400" />
+                    <Bot className="size-4 text-zinc-600" />
                     AI Assistant
                   </p>
                   <p className="mt-1 text-sm text-zinc-600">
