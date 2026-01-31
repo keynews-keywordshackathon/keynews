@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
+import { OnboardingForm } from '@/components/onboarding-form'
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
@@ -11,13 +12,8 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="flex h-svh w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <h1 className="text-2xl font-bold">Welcome to Onboarding</h1>
-        <p className="text-muted-foreground">
-          Let&apos;s get you set up with your new account.
-        </p>
-      </div>
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <OnboardingForm />
     </div>
   )
 }
