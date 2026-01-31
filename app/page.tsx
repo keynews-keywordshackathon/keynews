@@ -309,9 +309,9 @@ export default function Home() {
   return (
     <div
       id="top"
-      className="relative min-h-screen overflow-hidden bg-zinc-50 text-zinc-900"
+      className="relative min-h-screen overflow-hidden bg-white text-zinc-900"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.6),_transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0" />
       <div
         className={`fixed inset-0 z-40 ${
           isAssistantOpen ? "pointer-events-auto" : "pointer-events-none"
@@ -571,7 +571,7 @@ export default function Home() {
       <main className="relative z-10 mx-auto max-w-7xl space-y-10 px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-8">
-            <section className="grid gap-6 rounded-3xl border border-black/10 bg-white/80 p-6 backdrop-blur-xl lg:grid-cols-[2fr_1fr]">
+            <section className="grid gap-6 py-8 lg:grid-cols-[2fr_1fr]">
               <div className="space-y-4">
                 <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
                   <Sparkles className="size-4 text-zinc-600" />
@@ -593,14 +593,14 @@ export default function Home() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="rounded-full border border-black/10 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-600 transition hover:-translate-y-0.5 hover:border-black/30"
+                      className="rounded-full border border-black/10 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-600 transition hover:bg-zinc-100"
                     >
                       {item.label}
                     </Link>
                   ))}
                 </div>
               </div>
-              <div className="grid gap-3 text-sm text-zinc-600">
+              <div className="grid gap-0 text-sm text-zinc-600">
                 {[
                   "Personal feed drawn from calendar, inbox, and social signals",
                   "Local coverage tuned to location, weather, and community alerts",
@@ -609,7 +609,7 @@ export default function Home() {
                 ].map((item) => (
                   <div
                     key={item}
-                    className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white/70 px-4 py-3 shadow-sm transition hover:-translate-y-0.5"
+                    className="flex items-center gap-3 border-b border-black/10 py-3 last:border-0"
                   >
                     <span className="h-2 w-2 rounded-full bg-zinc-900" />
                     <span>{item}</span>
@@ -642,18 +642,18 @@ export default function Home() {
                       </Link>
                     </div>
 
-                    <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="grid grid-cols-1 divide-y divide-black/10 lg:grid-cols-2 lg:divide-y-0">
                       {section.articles.map((article) => (
                         <article
                           key={article.title}
-                          className="rounded-2xl border border-black/5 bg-white/80 p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl transition hover:-translate-y-0.5"
+                          className="py-8 transition hover:bg-zinc-50/30 lg:p-8 lg:border-b lg:border-black/10 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
                         >
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                               {article.images.map((image) => (
                                 <div
                                   key={`${article.title}-${image.label}`}
-                                  className={`relative h-28 overflow-hidden rounded-xl border border-black/10 bg-gradient-to-br ${image.tint} ${
+                                  className={`relative h-28 overflow-hidden border border-black/10 bg-gradient-to-br ${image.tint} ${
                                     article.images.length === 1 ? "col-span-2" : ""
                                   }`}
                                 >
@@ -754,7 +754,7 @@ export default function Home() {
                 </Button>
               </div>
               <div className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
-                <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur-xl">
+                <div className="border border-black/10 p-5">
                   <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
                     <Gamepad2 className="size-4 text-zinc-600" />
                     Today&apos;s Game
@@ -774,7 +774,7 @@ export default function Home() {
                     </Button>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-black/10 bg-white/80 p-5">
+                <div className="border border-black/10 p-5">
                   <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
                     <TrendingUp className="size-4 text-zinc-600" />
                     Progress
@@ -825,7 +825,7 @@ export default function Home() {
                   ].map((item) => (
                     <div
                       key={item.title}
-                      className="rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5"
+                      className="border border-black/10 p-4 transition hover:bg-zinc-50"
                     >
                       <h4 className="text-sm font-bold font-serif text-black">{item.title}</h4>
                       <p className="mt-2 text-sm text-zinc-600">{item.description}</p>
@@ -837,7 +837,7 @@ export default function Home() {
           </div>
 
           <aside className="space-y-6">
-            <section className="rounded-3xl border border-black/10 bg-white/80 p-5 backdrop-blur-xl">
+            <section className="border border-black/10 p-5">
               <div className="space-y-4">
                 <div>
                   <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
@@ -847,11 +847,11 @@ export default function Home() {
                   <h3 className="mt-2 text-2xl font-bold font-serif text-black">{weatherPanel.location}</h3>
                   <p className="mt-2 text-sm text-zinc-600">{weatherPanel.summary}</p>
                 </div>
-                <div className="grid gap-3">
+                <div className="grid gap-0">
                   {weatherPanel.forecast.map((item) => (
                     <div
                       key={item.day}
-                      className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-sm"
+                      className="flex items-center justify-between border-b border-black/10 py-3 text-sm last:border-0"
                     >
                       <div>
                         <p className="font-semibold">{item.day}</p>

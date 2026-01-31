@@ -2,6 +2,7 @@
 
 import { Composio } from '@composio/core'
 import OpenAI from 'openai'
+import { createClient } from '@/lib/supabase/server'
 
 // Initialize clients
 const getComposioClient = () => {
@@ -16,7 +17,17 @@ const getOpenAIClient = () => {
     return new OpenAI({ apiKey })
 }
 
-export async function startGmailAuth(entityId: string = 'default') {
+export async function startGmailAuth() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error('User not authenticated')
+    }
+
+    const entityId = user.id
+    console.log('[Composio] Starting auth for user entity:', entityId)
+
     const client = getComposioClient()
     const authConfigId = process.env.COMPOSIO_GMAIL_AUTH_CONFIG_ID
 
@@ -44,8 +55,20 @@ export async function startGmailAuth(entityId: string = 'default') {
     }
 }
 
-export async function fetchEmails(entityId: string = 'default') {
+export async function fetchEmails() {
     console.log('--- TEST LOG: fetchEmails server action called ---')
+
+    // Get authenticated user ID
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error('User not authenticated')
+    }
+
+    const entityId = user.id
+    console.log('[Composio] Fetching emails for user entity:', entityId)
+
     const composio = getComposioClient()
     // Skipper OpenAI client for now
 
@@ -96,6 +119,35 @@ export async function fetchEmails(entityId: string = 'default') {
         const fetchResult = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
 
         console.log('[Composio] Email fetch result:', JSON.stringify(fetchResult, null, 2))
+
+        // Save to Supabase
+        try {
+            const supabase = await createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (user) {
+                const { error: insertError } = await supabase
+                    .from('user_emails')
+                    .upsert({
+                        user_id: user.id,
+                        email_data: fetchResult,
+                        created_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'user_id'
+                    })
+
+                if (insertError) {
+                    console.error('[Supabase] Error saving emails:', insertError)
+                } else {
+                    console.log('[Supabase] Successfully saved emails for user:', user.id)
+                }
+            } else {
+                console.warn('[Supabase] No authenticated user found, performing anonymous fetch')
+            }
+        } catch (dbError) {
+            console.error('[Supabase] Unexpected error saving emails:', dbError)
+            // Don't fail the fetch just because save failed
+        }
 
         // Parse the emails from the result
         let emails: any[] = []
