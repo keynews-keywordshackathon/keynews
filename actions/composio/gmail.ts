@@ -97,7 +97,7 @@ export async function fetchEmails() {
             type: 'function',
             function: {
                 name: 'GMAIL_FETCH_EMAILS',
-                arguments: JSON.stringify({ max_results: 10 })
+                arguments: JSON.stringify({ max_results: 2 })
             }
         }
 
@@ -120,6 +120,27 @@ export async function fetchEmails() {
 
         console.log('[Composio] Email fetch result:', JSON.stringify(fetchResult, null, 2))
 
+        // Parse and clean elements
+        let emails: any[] = []
+        if (Array.isArray(fetchResult)) {
+            for (const item of fetchResult) {
+                if (item.content) {
+                    try {
+                        const content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content
+                        if (content.data?.messages) {
+                            emails.push(...content.data.messages)
+                        } else if (Array.isArray(content)) {
+                            emails.push(...content)
+                        }
+                    } catch (e) {
+                        console.error('[Composio] Error parsing email content:', e)
+                    }
+                }
+            }
+        }
+
+        const cleanedEmails = cleanEmails(emails, true)
+
         // Save to Supabase
         try {
             const supabase = await createClient()
@@ -130,8 +151,8 @@ export async function fetchEmails() {
                     .from('user_emails')
                     .upsert({
                         user_id: user.id,
-                        email_data: fetchResult,
-                        created_at: new Date().toISOString()
+                        email_data: cleanedEmails, // Saving cleaned data
+                        updated_at: new Date().toISOString()
                     }, {
                         onConflict: 'user_id'
                     })
@@ -149,27 +170,7 @@ export async function fetchEmails() {
             // Don't fail the fetch just because save failed
         }
 
-        // Parse the emails from the result
-        let emails: any[] = []
-
-        if (Array.isArray(fetchResult)) {
-            for (const item of fetchResult) {
-                if (item.content) {
-                    try {
-                        const content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content
-                        if (content.data?.messages) {
-                            emails = content.data.messages
-                        } else if (Array.isArray(content)) {
-                            emails = content
-                        }
-                    } catch (e) {
-                        console.error('[Composio] Error parsing email content:', e)
-                    }
-                }
-            }
-        }
-
-        return { success: true, emails: emails.slice(0, 50) }
+        return { success: true, emails: cleanedEmails.slice(0, 50) }
     } catch (error) {
         console.error('Error fetching emails:', error)
         return {
@@ -177,6 +178,21 @@ export async function fetchEmails() {
             error: error instanceof Error ? error.message : 'Failed to fetch emails'
         }
     }
+}
+
+function cleanEmails(emails: any[], enableCleanup: boolean = true) {
+    if (!enableCleanup) return emails
+
+    return emails.map((email: any) => ({
+        id: email.messageId || email.id,
+        threadId: email.threadId,
+        subject: email.subject || email.preview?.subject || 'No Subject',
+        sender: email.sender || email.from || 'Unknown',
+        to: email.to,
+        date: email.date || email.messageTimestamp,
+        body: email.messageText || email.body || email.snippet || '',
+        snippet: email.preview?.body || email.snippet || ''
+    }))
 }
 
 /**
