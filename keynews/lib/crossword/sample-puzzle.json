@@ -1,0 +1,60 @@
+{
+  "id": "daily-2026-01-31",
+  "title": "Daily Crossword",
+  "author": "KeyNews",
+  "rows": 15,
+  "cols": 15,
+  "grid": [
+    ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"],
+    ["P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "A", "B", "C", "D"],
+    ["E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S"],
+    ["T", "U", "V", "W", "X", "Y", "Z", "A", "B", "C", "D", "E", "F", "G", "H"],
+    ["I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W"],
+    ["X", "Y", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"],
+    ["M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "A"],
+    ["B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P"],
+    ["Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "A", "B", "C", "D", "E"],
+    ["F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"],
+    ["U", "V", "W", "X", "Y", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I"],
+    ["J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X"],
+    ["Y", "Z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"],
+    ["N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "A", "B"],
+    ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q"]
+  ],
+  "clues": {
+    "across": [
+      { "number": 1, "text": "Clue 1-Across", "answer": "ABCDEFGHIJKLMNO", "row": 0, "col": 0 },
+      { "number": 16, "text": "Clue 16-Across", "answer": "PQRSTUVWXYZABCD", "row": 1, "col": 0 },
+      { "number": 17, "text": "Clue 17-Across", "answer": "EFGHIJKLMNOPQRS", "row": 2, "col": 0 },
+      { "number": 18, "text": "Clue 18-Across", "answer": "TUVWXYZABCDEFGH", "row": 3, "col": 0 },
+      { "number": 19, "text": "Clue 19-Across", "answer": "IJKLMNOPQRSTUVW", "row": 4, "col": 0 },
+      { "number": 20, "text": "Clue 20-Across", "answer": "XYZABCDEFGHIJKL", "row": 5, "col": 0 },
+      { "number": 21, "text": "Clue 21-Across", "answer": "MNOPQRSTUVWXYZA", "row": 6, "col": 0 },
+      { "number": 22, "text": "Clue 22-Across", "answer": "BCDEFGHIJKLMNOP", "row": 7, "col": 0 },
+      { "number": 23, "text": "Clue 23-Across", "answer": "QRSTUVWXYZABCDE", "row": 8, "col": 0 },
+      { "number": 24, "text": "Clue 24-Across", "answer": "FGHIJKLMNOPQRST", "row": 9, "col": 0 },
+      { "number": 25, "text": "Clue 25-Across", "answer": "UVWXYZABCDEFGHI", "row": 10, "col": 0 },
+      { "number": 26, "text": "Clue 26-Across", "answer": "JKLMNOPQRSTUVWX", "row": 11, "col": 0 },
+      { "number": 27, "text": "Clue 27-Across", "answer": "YZABCDEFGHIJKLM", "row": 12, "col": 0 },
+      { "number": 28, "text": "Clue 28-Across", "answer": "NOPQRSTUVWXYZAB", "row": 13, "col": 0 },
+      { "number": 29, "text": "Clue 29-Across", "answer": "CDEFGHIJKLMNOPQ", "row": 14, "col": 0 }
+    ],
+    "down": [
+      { "number": 1, "text": "Clue 1-Down", "answer": "APETIXMBQFUJYNC", "row": 0, "col": 0 },
+      { "number": 2, "text": "Clue 2-Down", "answer": "BQUFJYNCRGVKZOD", "row": 0, "col": 1 },
+      { "number": 3, "text": "Clue 3-Down", "answer": "CRGVKZODSHWLAPE", "row": 0, "col": 2 },
+      { "number": 4, "text": "Clue 4-Down", "answer": "DSHWLAPETIXMBQF", "row": 0, "col": 3 },
+      { "number": 5, "text": "Clue 5-Down", "answer": "ETIXMBQFUJYNCRG", "row": 0, "col": 4 },
+      { "number": 6, "text": "Clue 6-Down", "answer": "FUJYNCRGVKZODSH", "row": 0, "col": 5 },
+      { "number": 7, "text": "Clue 7-Down", "answer": "GVKZODSHWLAPETI", "row": 0, "col": 6 },
+      { "number": 8, "text": "Clue 8-Down", "answer": "HWLAPETIXMBQFUJ", "row": 0, "col": 7 },
+      { "number": 9, "text": "Clue 9-Down", "answer": "IXMBQFUJYNCRGVK", "row": 0, "col": 8 },
+      { "number": 10, "text": "Clue 10-Down", "answer": "JYNCRGVKZODSHWL", "row": 0, "col": 9 },
+      { "number": 11, "text": "Clue 11-Down", "answer": "KZODSHWLAPETIXM", "row": 0, "col": 10 },
+      { "number": 12, "text": "Clue 12-Down", "answer": "LAPETIXMBQFUJYN", "row": 0, "col": 11 },
+      { "number": 13, "text": "Clue 13-Down", "answer": "MBQFUJYNCRGVKZO", "row": 0, "col": 12 },
+      { "number": 14, "text": "Clue 14-Down", "answer": "NCRGVKZODSHWLAP", "row": 0, "col": 13 },
+      { "number": 15, "text": "Clue 15-Down", "answer": "ODSHWLAPETIXMBQ", "row": 0, "col": 14 }
+    ]
+  }
+}
