@@ -1,7 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Bot,
+  CalendarDays,
+  CloudSun,
+  Gamepad2,
+  Globe2,
+  MapPin,
+  Newspaper,
+  Sparkles,
+  TrendingUp,
+  User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -241,6 +254,12 @@ const getPreviewText = (text: string, sentenceCount = 2) => {
   return sentences.slice(0, sentenceCount).join(" ");
 };
 
+const sectionIconMap = {
+  personal: User,
+  local: MapPin,
+  global: Globe2,
+};
+
 export default function Home() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [activeArticle, setActiveArticle] = useState<
@@ -452,7 +471,8 @@ export default function Home() {
             >
               <div className="flex items-center justify-between border-b border-white/20 px-6 py-4">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                  <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                    <Gamepad2 className="size-4 text-zinc-400" />
                     Games
                   </p>
                   <h3 className="mt-1 text-lg font-medium">Daily Crossword</h3>
@@ -473,6 +493,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-zinc-600 shadow-sm">
+              <Sparkles className="size-4 text-zinc-500" />
               AI Newspaper · Personalized · Live
             </div>
             <div className="space-y-2">
@@ -485,13 +506,16 @@ export default function Home() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500">
-            <span className="rounded-full border border-black/10 bg-white/80 px-4 py-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2">
+              <MapPin className="size-4 text-zinc-400" />
               Urbana-Champaign
             </span>
-            <span className="rounded-full border border-black/10 bg-white/80 px-4 py-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2">
+              <CalendarDays className="size-4 text-zinc-400" />
               Saturday · 31 Jan
             </span>
-            <span className="rounded-full border border-black/10 bg-white/80 px-4 py-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2">
+              <Newspaper className="size-4 text-zinc-400" />
               Edition 01
             </span>
           </div>
@@ -523,7 +547,8 @@ export default function Home() {
           <div className="space-y-8">
             <section className="grid gap-6 rounded-3xl border border-black/10 bg-white/60 p-6 backdrop-blur-xl lg:grid-cols-[2fr_1fr]">
               <div className="space-y-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                  <Sparkles className="size-4 text-zinc-400" />
                   High-Level Agent Flow
                 </p>
                 <h2 className="text-2xl font-semibold md:text-3xl">
@@ -568,36 +593,40 @@ export default function Home() {
             </section>
 
             <section className="space-y-8">
-              {sections.map((section) => (
-                <div
-                  key={section.id}
-                  id={section.id}
-                  className="group relative overflow-hidden rounded-3xl border border-black/10 bg-white/65 p-6 shadow-[0_25px_60px_-45px_rgba(15,23,42,0.6)] backdrop-blur-xl transition hover:-translate-y-1"
-                >
+              {sections.map((section) => {
+                const SectionIcon = sectionIconMap[section.id as keyof typeof sectionIconMap];
+                return (
                   <div
-                    className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${section.accent}`}
-                  />
-                  <div className="relative z-10 space-y-6">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                          {section.title}
-                        </p>
-                        <h3 className="mt-2 text-2xl font-semibold">{section.subtitle}</h3>
+                    key={section.id}
+                    id={section.id}
+                    className="group relative overflow-hidden rounded-3xl border border-black/10 bg-white/65 p-6 shadow-[0_25px_60px_-45px_rgba(15,23,42,0.6)] backdrop-blur-xl transition hover:-translate-y-1"
+                  >
+                    <div
+                      className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${section.accent}`}
+                    />
+                    <div className="relative z-10 space-y-6">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                            <SectionIcon className="size-4 text-zinc-400" />
+                            {section.title}
+                          </p>
+                          <h3 className="mt-2 text-2xl font-semibold">{section.subtitle}</h3>
+                        </div>
+                        <Link
+                          href="#top"
+                          className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 transition hover:text-zinc-900"
+                        >
+                          <ArrowUpRight className="size-4" />
+                          Back to top
+                        </Link>
                       </div>
-                      <Link
-                        href="#top"
-                        className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 transition hover:text-zinc-900"
-                      >
-                        Back to top
-                      </Link>
-                    </div>
 
                     <div className="grid gap-6 lg:grid-cols-2">
                       {section.articles.map((article) => (
                         <article
                           key={article.title}
-                          className="rounded-2xl bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5"
+                          className="rounded-2xl border border-white/30 bg-white/55 p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl transition hover:-translate-y-0.5"
                         >
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
@@ -621,7 +650,7 @@ export default function Home() {
                                 <p className="text-sm leading-6 text-zinc-600">
                                   {getPreviewText(article.summary)}
                                 </p>
-                                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/95 to-transparent" />
+                                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/75 to-transparent" />
                               </div>
                               <div>
                                 <Button
@@ -683,8 +712,9 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </section>
 
             <section className="rounded-3xl border border-black/10 bg-white/70 px-6 py-8 backdrop-blur-xl">
@@ -698,26 +728,35 @@ export default function Home() {
                     Keep focus sharp with a quick puzzle tailored to your brief.
                   </p>
                 </div>
-                <Button size="sm" onClick={() => setIsCrosswordOpen(true)}>
+                <Button size="sm" className="gap-2" onClick={() => setIsCrosswordOpen(true)}>
+                  <Gamepad2 className="size-4" />
                   Open crossword
                 </Button>
               </div>
               <div className="mt-6 grid gap-4 md:grid-cols-[1.2fr_1fr]">
                 <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-white/85 to-white p-5">
-                  <p className="text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
+                  <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
+                    <Gamepad2 className="size-4 text-zinc-400" />
                     Today&apos;s Game
                   </p>
                   <p className="mt-2 text-sm text-zinc-600">
                     15×15 grid with checks, reveals, and autosave.
                   </p>
                   <div className="mt-4">
-                    <Button size="sm" variant="ghost" onClick={() => setIsCrosswordOpen(true)}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="gap-2"
+                      onClick={() => setIsCrosswordOpen(true)}
+                    >
+                      <Gamepad2 className="size-4" />
                       Play now
                     </Button>
                   </div>
                 </div>
                 <div className="rounded-2xl border border-black/10 bg-white/80 p-5">
-                  <p className="text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
+                  <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
+                    <TrendingUp className="size-4 text-zinc-400" />
                     Progress
                   </p>
                   <p className="mt-2 text-sm text-zinc-600">
@@ -730,7 +769,8 @@ export default function Home() {
             <section className="rounded-3xl border border-black/10 bg-white/70 px-6 py-8 backdrop-blur-xl">
               <div className="grid gap-6 lg:grid-cols-[1.5fr_2fr] lg:items-center">
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                    <Sparkles className="size-4 text-zinc-400" />
                     Personalized Actions
                   </p>
                   <h3 className="text-2xl font-semibold">Next moves, already queued.</h3>
@@ -779,7 +819,8 @@ export default function Home() {
             <section className="rounded-3xl border border-black/10 bg-white/70 p-5 backdrop-blur-xl">
               <div className="space-y-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                    <CloudSun className="size-4 text-zinc-400" />
                     {weatherPanel.title}
                   </p>
                   <h3 className="mt-2 text-xl font-medium">{weatherPanel.location}</h3>
@@ -836,14 +877,16 @@ export default function Home() {
             <div className="rounded-2xl bg-white/60 p-4 backdrop-blur-xl">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-zinc-500">
+                    <Bot className="size-4 text-zinc-400" />
                     AI Assistant
                   </p>
                   <p className="mt-1 text-sm text-zinc-600">
                     Open the assistant for quick analysis.
                   </p>
                 </div>
-                <Button size="sm" onClick={() => setIsAssistantOpen(true)}>
+                <Button size="sm" className="gap-2" onClick={() => setIsAssistantOpen(true)}>
+                  <Bot className="size-4" />
                   Open
                 </Button>
               </div>
