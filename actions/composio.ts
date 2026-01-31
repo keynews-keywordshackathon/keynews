@@ -17,7 +17,17 @@ const getOpenAIClient = () => {
     return new OpenAI({ apiKey })
 }
 
-export async function startGmailAuth(entityId: string = 'default') {
+export async function startGmailAuth() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error('User not authenticated')
+    }
+
+    const entityId = user.id
+    console.log('[Composio] Starting auth for user entity:', entityId)
+
     const client = getComposioClient()
     const authConfigId = process.env.COMPOSIO_GMAIL_AUTH_CONFIG_ID
 
@@ -45,8 +55,20 @@ export async function startGmailAuth(entityId: string = 'default') {
     }
 }
 
-export async function fetchEmails(entityId: string = 'default') {
+export async function fetchEmails() {
     console.log('--- TEST LOG: fetchEmails server action called ---')
+
+    // Get authenticated user ID
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        throw new Error('User not authenticated')
+    }
+
+    const entityId = user.id
+    console.log('[Composio] Fetching emails for user entity:', entityId)
+
     const composio = getComposioClient()
     // Skipper OpenAI client for now
 

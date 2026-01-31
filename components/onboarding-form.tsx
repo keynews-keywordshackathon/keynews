@@ -60,7 +60,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                     // We must fetch for the same entityId that we authenticated with.
                     // startGmailAuth used 'default' (by default), so we should use 'default' here too.
                     // connectedAccountId is just the connection token, not the entityId.
-                    const result = await fetchEmails('default')
+                    const result = await fetchEmails()
                     console.log('Email fetch result:', result)
                 } catch (error) {
                     console.error('Failed to fetch emails:', error)
