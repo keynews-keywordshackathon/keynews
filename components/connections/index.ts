@@ -6,3 +6,4 @@ export { SolvedGroup } from "./SolvedGroup";
 export { MistakesIndicator } from "./MistakesIndicator";
 export { ControlButtons } from "./ControlButtons";
 export { GameOverlay } from "./GameOverlay";
+export { CompletedGrid } from "./CompletedGrid";

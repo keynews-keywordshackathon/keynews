@@ -82,11 +82,16 @@ export const PUZZLES: Puzzle[] = [
     },
 ];
 
-// Get today's puzzle or a random one
+// Get today's puzzle (deterministic - uses date to pick a consistent puzzle)
 export function getTodaysPuzzle(): Puzzle {
     const today = new Date().toISOString().split("T")[0];
     const todaysPuzzle = PUZZLES.find((p) => p.date === today);
-    return todaysPuzzle || PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+    if (todaysPuzzle) return todaysPuzzle;
+    
+    // Use a deterministic selection based on the date (not random)
+    // This ensures the same puzzle is returned for the same day
+    const dateHash = today.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return PUZZLES[dateHash % PUZZLES.length];
 }
 
 // Get puzzle by ID

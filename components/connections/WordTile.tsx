@@ -15,24 +15,21 @@ export function WordTile({ word, isSelected, onClick, disabled }: WordTileProps)
             onClick={onClick}
             disabled={disabled}
             className={cn(
-                "relative h-16 sm:h-20 w-full rounded-lg font-bold uppercase text-sm sm:text-base",
+                "relative h-16 sm:h-20 w-full rounded-md font-bold uppercase text-lg sm:text-xl",
                 "transition-all duration-200 ease-out",
-                "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500",
-                "select-none cursor-pointer",
+                "select-none",
+                "focus:outline-none",
                 // Default state
                 !isSelected && [
-                    "bg-[#efefe6] text-black",
-                    "hover:bg-[#e4e4db] hover:scale-[1.02]",
-                    "active:scale-[0.98]",
+                    "bg-[#efefe6] text-foreground",
+                    "cursor-pointer",
                 ],
                 // Selected state
                 isSelected && [
-                    "bg-[#5a594e] text-white",
-                    "scale-[1.02]",
-                    "shadow-lg",
+                    "bg-[#59594e] text-background",
                 ],
                 // Disabled state
-                disabled && "opacity-50 cursor-not-allowed hover:scale-100"
+                disabled && "opacity-50 cursor-not-allowed"
             )}
             aria-pressed={isSelected}
         >

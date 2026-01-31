@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { Puzzle, WordGroup, GameState } from "./types";
 import { getAllWords, shuffleArray } from "./puzzles";
 import { DIFFICULTY_ORDER } from "./types";
@@ -8,9 +8,28 @@ import { DIFFICULTY_ORDER } from "./types";
 const MAX_SELECTION = 4;
 const MAX_MISTAKES = 4;
 const MESSAGE_DURATION = 2000;
+const STORAGE_PREFIX = "connections_";
 
-export function useConnectionsGame(puzzle: Puzzle) {
-    const [gameState, setGameState] = useState<GameState>(() => ({
+interface SavedState {
+    solvedCategories: string[]; // Save only category names to preserve order
+    remainingWords: string[];
+    mistakesRemaining: number;
+    guessedCombinations: string[][];
+    gameStatus: "playing" | "won" | "lost";
+}
+
+function getSavedState(state: GameState): SavedState {
+    return {
+        solvedCategories: state.solvedGroups.map((g) => g.category),
+        remainingWords: state.remainingWords,
+        mistakesRemaining: state.mistakesRemaining,
+        guessedCombinations: state.guessedCombinations,
+        gameStatus: state.gameStatus,
+    };
+}
+
+function createInitialState(puzzle: Puzzle): GameState {
+    return {
         puzzle,
         remainingWords: getAllWords(puzzle),
         selectedWords: [],
@@ -19,7 +38,73 @@ export function useConnectionsGame(puzzle: Puzzle) {
         guessedCombinations: [],
         gameStatus: "playing",
         message: null,
-    }));
+    };
+}
+
+export function useConnectionsGame(puzzle: Puzzle) {
+    // Start with fresh state (don't access localStorage during SSR)
+    const [gameState, setGameState] = useState<GameState>(() => createInitialState(puzzle));
+    
+    // Track loading state
+    const hasLoadedRef = useRef(false);
+
+    // Load saved state on client mount (only once)
+    useEffect(() => {
+        if (hasLoadedRef.current) return;
+        hasLoadedRef.current = true;
+
+        try {
+            const raw = localStorage.getItem(STORAGE_PREFIX + puzzle.id);
+            if (raw) {
+                const saved = JSON.parse(raw) as SavedState;
+                
+                // Restore full WordGroup objects from puzzle by matching category
+                const categoryToGroup = new Map(puzzle.groups.map((g) => [g.category, g]));
+                const restoredGroups: WordGroup[] = [];
+                
+                for (const category of saved.solvedCategories || []) {
+                    const group = categoryToGroup.get(category);
+                    if (group) {
+                        restoredGroups.push(group);
+                    }
+                }
+
+                // Calculate remaining words based on restored groups (don't trust saved remainingWords)
+                const solvedWords = new Set(restoredGroups.flatMap((g) => g.words));
+                const allWords = puzzle.groups.flatMap((g) => g.words);
+                const remainingWords = allWords.filter((w) => !solvedWords.has(w));
+
+                // Only restore if we have valid saved data
+                if (saved.gameStatus) {
+                    setGameState({
+                        puzzle,
+                        remainingWords: remainingWords.length > 0 ? shuffleArray(remainingWords) : [],
+                        selectedWords: [], // Always clear selections on load
+                        solvedGroups: restoredGroups,
+                        mistakesRemaining: saved.mistakesRemaining ?? MAX_MISTAKES,
+                        guessedCombinations: saved.guessedCombinations || [],
+                        gameStatus: saved.gameStatus,
+                        message: null,
+                    });
+                }
+            }
+        } catch {
+            // Invalid data, ignore
+        }
+    }, [puzzle]);
+
+    // Helper to save state
+    const saveState = useCallback((state: GameState) => {
+        try {
+            const saved = getSavedState(state);
+            localStorage.setItem(
+                STORAGE_PREFIX + puzzle.id,
+                JSON.stringify(saved)
+            );
+        } catch {
+            // localStorage might be full or unavailable
+        }
+    }, [puzzle.id]);
 
     // Check if a word is selected
     const isSelected = useCallback(
@@ -120,12 +205,23 @@ export function useConnectionsGame(puzzle: Puzzle) {
         let matchedGroup: WordGroup | null = null;
         let oneAwayGroup: WordGroup | null = null;
 
+        // Create a set of solved category names for quick lookup
+        const solvedCategories = new Set(
+            gameState.solvedGroups.map((g) => g.category)
+        );
+
         for (const group of puzzle.groups) {
-            if (gameState.solvedGroups.includes(group)) continue;
+            // Skip if this group is already solved (check by category)
+            if (solvedCategories.has(group.category)) continue;
 
+            // Check if all 4 words from the group are in the selected set
+            const groupWordSet = new Set(group.words);
             const matches = group.words.filter((w) => selectedSet.has(w)).length;
+            
+            // Also verify that all selected words are in this group (exact match)
+            const allSelectedInGroup = gameState.selectedWords.every((w) => groupWordSet.has(w));
 
-            if (matches === 4) {
+            if (matches === 4 && allSelectedInGroup && gameState.selectedWords.length === 4) {
                 matchedGroup = group;
                 break;
             } else if (matches === 3) {
@@ -135,23 +231,28 @@ export function useConnectionsGame(puzzle: Puzzle) {
 
         if (matchedGroup) {
             // Correct guess!
+            const groupToAdd = matchedGroup; // Capture for closure
             setGameState((prev) => {
-                const newSolvedGroups = [...prev.solvedGroups, matchedGroup].sort(
-                    (a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]
-                );
+                // Keep groups in the order they were solved (don't sort)
+                const newSolvedGroups = [...prev.solvedGroups, groupToAdd];
                 const newRemainingWords = prev.remainingWords.filter(
-                    (w) => !matchedGroup.words.includes(w)
+                    (w) => !groupToAdd.words.includes(w)
                 );
                 const isWon = newSolvedGroups.length === 4;
 
-                return {
+                const newState = {
                     ...prev,
                     selectedWords: [],
                     solvedGroups: newSolvedGroups,
                     remainingWords: newRemainingWords,
-                    gameStatus: isWon ? "won" : "playing",
+                    gameStatus: isWon ? ("won" as const) : ("playing" as const),
                     message: isWon ? "Congratulations!" : null,
                 };
+                
+                // Save state after correct guess
+                saveState(newState);
+                
+                return newState;
             });
         } else {
             // Incorrect guess
@@ -159,13 +260,18 @@ export function useConnectionsGame(puzzle: Puzzle) {
                 const newMistakes = prev.mistakesRemaining - 1;
                 const isLost = newMistakes === 0;
 
-                return {
+                const newState = {
                     ...prev,
                     mistakesRemaining: newMistakes,
                     guessedCombinations: [...prev.guessedCombinations, prev.selectedWords],
-                    gameStatus: isLost ? "lost" : "playing",
+                    gameStatus: isLost ? ("lost" as const) : ("playing" as const),
                     selectedWords: isLost ? [] : prev.selectedWords,
                 };
+                
+                // Save state after incorrect guess
+                saveState(newState);
+                
+                return newState;
             });
 
             if (oneAwayGroup) {
@@ -179,6 +285,7 @@ export function useConnectionsGame(puzzle: Puzzle) {
         puzzle.groups,
         wasAlreadyGuessed,
         showMessage,
+        saveState,
     ]);
 
     // Reset the game
@@ -193,6 +300,12 @@ export function useConnectionsGame(puzzle: Puzzle) {
             gameStatus: "playing",
             message: null,
         });
+        // Clear saved state
+        try {
+            localStorage.removeItem(STORAGE_PREFIX + puzzle.id);
+        } catch {
+            // Ignore
+        }
     }, [puzzle]);
 
     // Computed values

@@ -16,7 +16,7 @@ export function WordGrid({
     disabled,
 }: WordGridProps) {
     return (
-        <div className="grid grid-cols-4 gap-2 sm:gap-3 w-full max-w-xl mx-auto">
+        <div className="grid grid-cols-4 gap-2 w-full">
             {words.map((word) => (
                 <WordTile
                     key={word}

@@ -19,10 +19,10 @@ export function SolvedGroup({ group, animationDelay = 0 }: SolvedGroupProps) {
                 animationDelay: `${animationDelay}ms`,
             }}
         >
-            <h3 className="font-bold text-sm sm:text-base uppercase tracking-wide text-black">
+            <h3 className="font-bold text-base sm:text-lg uppercase tracking-wide text-foreground">
                 {group.category}
             </h3>
-            <p className="text-xs sm:text-sm uppercase text-black/80 mt-1">
+            <p className="text-sm sm:text-base font-semibold uppercase text-foreground/80 mt-1">
                 {group.words.join(", ")}
             </p>
         </div>

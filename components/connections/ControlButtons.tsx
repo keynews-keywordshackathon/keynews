@@ -19,21 +19,16 @@ export function ControlButtons({
     canDeselectAll,
     disabled,
 }: ControlButtonsProps) {
-    const buttonBase = cn(
-        "px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500",
-        "disabled:opacity-50 disabled:cursor-not-allowed"
-    );
-
     return (
-        <div className="flex items-center justify-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap justify-center">
             <button
                 onClick={onShuffle}
                 disabled={disabled}
                 className={cn(
-                    buttonBase,
-                    "border-2 border-gray-800 bg-white text-gray-800",
-                    "hover:bg-gray-100 active:bg-gray-200"
+                    "px-5 py-2.5 rounded-full text-lg font-medium transition-colors",
+                    disabled
+                        ? "text-muted-foreground cursor-not-allowed border-0"
+                        : "border border-foreground/70 hover:bg-muted"
                 )}
             >
                 Shuffle
@@ -43,10 +38,10 @@ export function ControlButtons({
                 onClick={onDeselectAll}
                 disabled={disabled || !canDeselectAll}
                 className={cn(
-                    buttonBase,
-                    "border-2 border-gray-800 bg-white text-gray-800",
-                    "hover:bg-gray-100 active:bg-gray-200",
-                    !canDeselectAll && "border-gray-300 text-gray-400"
+                    "px-5 py-2.5 rounded-full text-lg font-medium transition-colors",
+                    disabled || !canDeselectAll
+                        ? "text-muted-foreground cursor-not-allowed border-0"
+                        : "border border-foreground/30 hover:bg-muted"
                 )}
             >
                 Deselect all
@@ -56,11 +51,10 @@ export function ControlButtons({
                 onClick={onSubmit}
                 disabled={disabled || !canSubmit}
                 className={cn(
-                    buttonBase,
-                    "border-2",
-                    canSubmit
-                        ? "border-gray-800 bg-gray-800 text-white hover:bg-gray-700 active:bg-gray-900"
-                        : "border-gray-300 bg-gray-200 text-gray-400"
+                    "px-5 py-2.5 rounded-full text-lg font-medium transition-colors",
+                    disabled || !canSubmit
+                        ? "text-muted-foreground cursor-not-allowed border-0"
+                        : "border border-foreground/30 hover:bg-muted"
                 )}
             >
                 Submit

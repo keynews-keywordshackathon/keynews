@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useConnectionsGame } from "@/lib/connections/useConnectionsGame";
 import type { Puzzle } from "@/lib/connections/types";
 import { WordGrid } from "./WordGrid";
@@ -7,6 +8,7 @@ import { SolvedGroup } from "./SolvedGroup";
 import { MistakesIndicator } from "./MistakesIndicator";
 import { ControlButtons } from "./ControlButtons";
 import { GameOverlay } from "./GameOverlay";
+import { CompletedGrid } from "./CompletedGrid";
 import { cn } from "@/lib/utils";
 
 interface ConnectionsGameProps {
@@ -27,17 +29,25 @@ export function ConnectionsGame({ puzzle }: ConnectionsGameProps) {
     } = useConnectionsGame(puzzle);
 
     const isGameOver = gameState.gameStatus !== "playing";
+    const [showOverlay, setShowOverlay] = useState(false);
+
+    // Show overlay when game ends
+    useEffect(() => {
+        if (isGameOver) {
+            setShowOverlay(true);
+        }
+    }, [isGameOver]);
 
     return (
-        <div className="flex flex-col items-center px-4 max-w-xl mx-auto">
+        <div className="w-full max-w-2xl mx-auto p-4 space-y-4">
             {/* Title */}
-            <h1 className="text-xl sm:text-2xl font-semibold text-center mb-6">
+            <h1 className="text-xl font-normal text-center">
                 Create four groups of four!
             </h1>
 
-            {/* Solved Groups */}
-            {gameState.solvedGroups.length > 0 && (
-                <div className="w-full space-y-2 mb-4">
+            {/* Solved Groups - Show during gameplay */}
+            {gameState.solvedGroups.length > 0 && gameState.gameStatus === "playing" && (
+                <div className="w-full space-y-2">
                     {gameState.solvedGroups.map((group, index) => (
                         <SolvedGroup
                             key={group.category}
@@ -48,11 +58,16 @@ export function ConnectionsGame({ puzzle }: ConnectionsGameProps) {
                 </div>
             )}
 
-            {/* Word Grid */}
-            {gameState.remainingWords.length > 0 && (
+            {/* Completed Grid - Show when game is won */}
+            {gameState.gameStatus === "won" && (
+                <CompletedGrid groups={gameState.solvedGroups} />
+            )}
+
+            {/* Word Grid - Show during gameplay */}
+            {gameState.remainingWords.length > 0 && gameState.gameStatus === "playing" && (
                 <div
                     className={cn(
-                        "w-full mb-6",
+                        "w-full",
                         // Shake animation on incorrect guess
                         gameState.mistakesRemaining < 4 &&
                         gameState.message === null &&
@@ -70,36 +85,48 @@ export function ConnectionsGame({ puzzle }: ConnectionsGameProps) {
             )}
 
             {/* Message Toast */}
-            {gameState.message && (
-                <div className="mb-4 px-4 py-2 bg-gray-800 text-white rounded-full text-sm font-medium animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {gameState.message && gameState.gameStatus === "playing" && (
+                <div className="px-4 py-2 bg-foreground text-background rounded-md text-sm font-medium animate-in fade-in slide-in-from-bottom-2 duration-300 text-center">
                     {gameState.message}
                 </div>
             )}
 
-            {/* Mistakes Indicator */}
-            <div className="mb-6">
+            {/* Mistakes Indicator - Only show during gameplay */}
+            {gameState.gameStatus === "playing" && (
                 <MistakesIndicator remaining={gameState.mistakesRemaining} />
-            </div>
+            )}
 
-            {/* Control Buttons */}
-            <ControlButtons
-                onShuffle={shuffle}
-                onDeselectAll={deselectAll}
-                onSubmit={submitGuess}
-                canSubmit={canSubmit}
-                canDeselectAll={canDeselectAll}
-                disabled={isGameOver}
-            />
+            {/* Control Buttons - Only show during gameplay */}
+            {gameState.gameStatus === "playing" && (
+                <ControlButtons
+                    onShuffle={shuffle}
+                    onDeselectAll={deselectAll}
+                    onSubmit={submitGuess}
+                    canSubmit={canSubmit}
+                    canDeselectAll={canDeselectAll}
+                    disabled={isGameOver}
+                />
+            )}
 
             {/* Game Over Overlay */}
-            {isGameOver && (
+            {isGameOver && showOverlay && (
                 <GameOverlay
                     status={gameState.gameStatus as "won" | "lost"}
                     solvedGroups={gameState.solvedGroups}
                     allGroups={allGroups}
-                    onPlayAgain={resetGame}
+                    onClose={() => setShowOverlay(false)}
                 />
             )}
+
+            {/* Debug Reset Button */}
+            <div className="pt-8 flex justify-center">
+                <button
+                    onClick={resetGame}
+                    className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                >
+                    Reset Game (Debug)
+                </button>
+            </div>
         </div>
     );
 }
