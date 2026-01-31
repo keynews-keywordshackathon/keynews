@@ -2,6 +2,7 @@
 
 import { Composio } from '@composio/core'
 import OpenAI from 'openai'
+import { createClient } from '@/lib/supabase/server'
 
 // Initialize clients
 const getComposioClient = () => {
@@ -96,6 +97,35 @@ export async function fetchEmails(entityId: string = 'default') {
         const fetchResult = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
 
         console.log('[Composio] Email fetch result:', JSON.stringify(fetchResult, null, 2))
+
+        // Save to Supabase
+        try {
+            const supabase = await createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (user) {
+                const { error: insertError } = await supabase
+                    .from('user_emails')
+                    .upsert({
+                        user_id: user.id,
+                        email_data: fetchResult,
+                        created_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'user_id'
+                    })
+
+                if (insertError) {
+                    console.error('[Supabase] Error saving emails:', insertError)
+                } else {
+                    console.log('[Supabase] Successfully saved emails for user:', user.id)
+                }
+            } else {
+                console.warn('[Supabase] No authenticated user found, performing anonymous fetch')
+            }
+        } catch (dbError) {
+            console.error('[Supabase] Unexpected error saving emails:', dbError)
+            // Don't fail the fetch just because save failed
+        }
 
         // Parse the emails from the result
         let emails: any[] = []
