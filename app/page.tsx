@@ -338,8 +338,8 @@ export default function Home() {
             <div className="hidden items-center gap-3 text-xs text-muted-foreground md:flex">
             </div>
             <div className="text-center">
-              <h1 className="headline-masthead text-4xl text-foreground md:text-6xl">
-                Keynews Daily
+              <h1 className="headline-masthead text-5xl leading-none text-foreground md:text-8xl">
+                The Keywords Times
               </h1>
             </div>
             <div className="flex items-center justify-end gap-3 text-xs text-muted-foreground">
