@@ -149,7 +149,7 @@ export async function getLikedTweets(twitterUserId: string) {
         console.log('[Twitter] Executing TWITTER_RETURNS_POST_OBJECTS_LIKED_BY_THE_PROVIDED_USER_ID...')
         const result = await executeAction(
             'TWITTER_RETURNS_POST_OBJECTS_LIKED_BY_THE_PROVIDED_USER_ID',
-            { id: twitterUserId },
+            { id: twitterUserId, max_results: 30 },
             entityId
         )
         console.log('[Twitter] Result execution success, result length:', Array.isArray(result) ? result.length : 'unknown')
@@ -206,7 +206,7 @@ export async function getHomeTimeline(twitterUserId: string) {
         console.log('[Twitter] Executing TWITTER_USER_HOME_TIMELINE_BY_USER_ID...')
         const result = await executeAction(
             'TWITTER_USER_HOME_TIMELINE_BY_USER_ID',
-            { id: twitterUserId },
+            { id: twitterUserId, max_results: 30 },
             entityId
         )
         console.log('[Twitter] Timeline execution success, result length:', Array.isArray(result) ? result.length : 'unknown')
