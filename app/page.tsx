@@ -23,12 +23,75 @@ import puzzleData from "@/lib/crossword/sample-puzzle.json";
 import type { PuzzleData } from "@/lib/crossword/types";
 import { sections, weatherPanel, stockPanel } from "@/lib/home/sections";
 import type { Puzzle } from "@/lib/connections/types";
+import { NytFrontSection } from "@/components/home/nyt-front-section";
+import type { NytFrontSectionProps, NytArticle } from "@/lib/home/nyt-types";
 import { createClient } from "@/lib/supabase/client";
 
 
 const getPreviewText = (text: string, sentenceCount = 2) => {
   const sentences = text.split(/(?<=[.!?])\s+/);
   return sentences.slice(0, sentenceCount).join(" ");
+};
+
+// Transform sections articles into NYTimes format
+const transformToNytFormat = (): NytFrontSectionProps => {
+  const personalSection = sections.find((s) => s.id === "personal");
+  const localSection = sections.find((s) => s.id === "local");
+  const globalSection = sections.find((s) => s.id === "global");
+
+  // Find first article with images for center
+  const centerArticle = sections
+    .flatMap((s) => s.articles)
+    .find((a) => a.images && a.images.length > 0) || sections[0].articles[0];
+
+  // Left column: Personal articles (2-3, first has blurb)
+  const leftArticles = (personalSection?.articles || []).slice(0, 3).map((article, index) => ({
+    title: article.title,
+    blurb: index === 0 && personalSection ? getPreviewText(article.summary, 2) : undefined,
+    href: article.action?.href,
+  })) as NytArticle[];
+
+  // Center article: Featured with image
+  const centerNytArticle = {
+    title: centerArticle.title,
+    blurb: getPreviewText(centerArticle.summary, 3),
+    image: centerArticle.images?.[0]
+      ? {
+          src: "",
+          alt: centerArticle.images[0].label,
+          label: centerArticle.images[0].label,
+          tint: centerArticle.images[0].tint,
+        }
+      : undefined,
+    href: centerArticle.action?.href,
+  };
+
+  // Bottom row: Local articles (2 articles with images)
+  const bottomArticlesList: NytArticle[] = (localSection?.articles || []).slice(0, 2).map((article) => ({
+    title: article.title,
+    blurb: getPreviewText(article.summary, 2),
+    image: article.images?.[0]
+      ? {
+          src: "",
+          alt: article.images[0].label,
+          label: article.images[0].label,
+          tint: article.images[0].tint,
+        }
+      : undefined,
+    href: article.action?.href,
+  }));
+  
+  // Ensure we have exactly 2 articles, pad if needed
+  const bottomArticles: [NytArticle, NytArticle] = [
+    bottomArticlesList[0] || { title: "", blurb: "" },
+    bottomArticlesList[1] || { title: "", blurb: "" },
+  ];
+
+  return {
+    leftArticles,
+    centerArticle: centerNytArticle,
+    bottomArticles,
+  };
 };
 
 const sectionIconMap = {
@@ -403,53 +466,11 @@ export default function Home() {
       <main className="relative z-10 mx-auto max-w-7xl space-y-4 px-4 py-4">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-4">
-            <section id="agent-flow" className="newspaper-border grid gap-4 p-4 lg:grid-cols-[2fr_1fr]">
-              <div className="space-y-3">
-                <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
-                  <Sparkles className="size-4 text-muted-foreground" />
-                  High-Level Agent Flow
-                </p>
-                <h2 className="headline-primary text-2xl text-foreground md:text-3xl">
-                  Overview of personal, local, and global intelligence.
-                </h2>
-                <p className="article-body font-serif text-foreground/80">
-                  MCP signals, personal context, bias checks, and actionable recaps power each
-                  section. Jump into the coverage below.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    { label: "Personal Brief", href: "#personal" },
-                    { label: "Local Pulse", href: "#local" },
-                    { label: "Global Desk", href: "#global" },
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="section-label border border-border px-3 py-2 text-muted-foreground transition hover:text-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              <div className="grid gap-0 text-sm text-muted-foreground">
-                {[
-                  "Personal feed drawn from calendar, inbox, and social signals",
-                  "Local coverage tuned to location, weather, and community alerts",
-                  "Global brief tailored to long-term interests and research goals",
-                  "Each story verified across sources with action-ready takeaways",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 border-b border-border py-2 last:border-0"
-                  >
-                    <span className="h-2 w-2 bg-foreground" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
 
+            {/* NYTimes-Style Front Page Section */}
+            <NytFrontSection {...transformToNytFormat()} />
+
+            {/* Additional sections below */}
             <section className="space-y-4">
               {homeSections.map((section) => {
                 const SectionIcon = sectionIconMap[section.id as keyof typeof sectionIconMap];
