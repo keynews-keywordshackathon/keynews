@@ -383,13 +383,13 @@ export async function generateInterestsAction() {
 
                 const processInterest = async (category: string, interest: string) => {
                     try {
-                        const interestSummary = interest.split('.')[0].substring(0, 40) + '...';
+                        const interestSummary = interest.split('.')[0];
                         log(`Generating search queries for ${category} interest: "${interestSummary}"`);
                         const queries = await generateQueriesForInterest(category, interest);
                         const articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[] = [];
 
                         for (const query of queries) {
-                            log(`Searching news for query: "${query.substring(0, 40)}..."`);
+                            log(`Searching news for query: "${query.split('.')[0]}..."`);
                             const result = await exa.searchAndContents(query, {
                                 type: "auto",
                                 useAutoprompt: true,
@@ -498,7 +498,7 @@ export async function generateInterestsAction() {
                     </output_format>
                 `;
 
-                        log(`Generating news cards from articles for interest: "${interest.split('.')[0].substring(0, 40)}..."`);
+                        log(`Generating news cards from articles for interest: "${interest.split('.')[0]}"`);
                         const { text } = await generateText({
                             model: google('gemini-3-flash-preview'),
                             prompt
@@ -544,7 +544,7 @@ export async function generateInterestsAction() {
                             const enriched = await processInterest(category, interest);
                             enrichedInterests[category].push(enriched);
                             // Stream partial update if needed, or just logs
-                            const interestSummary = interest.split('.')[0].substring(0, 40) + '...';
+                            const interestSummary = interest.split('.')[0];
                             let foundMsg = `Found ${enriched.articles.length} articles for interest`;
                             if (enriched.articles.length > 0) {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -564,8 +564,10 @@ export async function generateInterestsAction() {
                             interest: item.interest,
                             articles: generatedArticles
                         });
-                        const interestSummary = item.interest.split('.')[0].substring(0, 40) + '...';
-                        stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest` });
+                        const interestSummary = item.interest.split('.')[0];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const articleTitles = generatedArticles.map((a: any) => `"${a.title}"`).join(', ');
+                        stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest: ${articleTitles}` });
                     }
                 }
 
