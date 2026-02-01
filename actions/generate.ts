@@ -12,6 +12,7 @@ import { fetchEmails } from './composio/gmail';
 import { fetchCalendarEvents } from './composio/google-calendar';
 import { getTwitterUser, getLikedTweets } from './composio/twitter';
 import { createClient } from '@/lib/supabase/server';
+import { sections as baseSections } from '@/lib/home/sections';
 
 export async function generateInterestsAction() {
   const stream = createStreamableValue();
@@ -429,6 +430,37 @@ export async function generateInterestsAction() {
                 });
                 stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest.` });
             }
+        }
+
+        const savedSections = baseSections.map((section) => {
+            const items = generatedSections[section.id] || [];
+            const articles = items.flatMap((item: { articles?: unknown }) =>
+                Array.isArray(item.articles) ? item.articles : []
+            );
+            return {
+                ...section,
+                articles
+            };
+        });
+
+        try {
+            const { error } = await supabase
+                .from('user_generated_sections')
+                .upsert({
+                    user_id: user.id,
+                    sections: savedSections,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id'
+                });
+
+            if (error) {
+                log(`Failed to save generated sections: ${error.message}`);
+            } else {
+                log('Saved generated sections to Supabase.');
+            }
+        } catch (e) {
+            log(`Error saving generated sections: ${e}`);
         }
 
         stream.update({ type: 'final_result', data: { interests, enrichedInterests, generatedSections } });

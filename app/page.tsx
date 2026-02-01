@@ -23,6 +23,7 @@ import puzzleData from "@/lib/crossword/sample-puzzle.json";
 import type { PuzzleData } from "@/lib/crossword/types";
 import { sections, weatherPanel, stockPanel } from "@/lib/home/sections";
 import type { Puzzle } from "@/lib/connections/types";
+import { createClient } from "@/lib/supabase/client";
 
 
 const getPreviewText = (text: string, sentenceCount = 2) => {
@@ -36,14 +37,16 @@ const sectionIconMap = {
   global: Globe2,
 };
 
+type Section = (typeof sections)[number];
+type Article = Section["articles"][number];
+
 export default function Home() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
-  const [activeArticle, setActiveArticle] = useState<
-    (typeof sections)[number]["articles"][number] | null
-  >(null);
+  const [activeArticle, setActiveArticle] = useState<Article | null>(null);
   const [isCrosswordOpen, setIsCrosswordOpen] = useState(false);
   const [isConnectionsOpen, setIsConnectionsOpen] = useState(false);
   const [connectionsPuzzle, setConnectionsPuzzle] = useState<Puzzle | null>(null);
+  const [homeSections, setHomeSections] = useState<Section[]>(sections);
 
   useEffect(() => {
     if (!activeArticle && !isCrosswordOpen && !isConnectionsOpen) {
@@ -78,6 +81,33 @@ export default function Home() {
       isActive = false;
     };
   }, [isConnectionsOpen, connectionsPuzzle]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadSections = async () => {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) return;
+
+      const { data, error } = await supabase
+        .from("user_generated_sections")
+        .select("sections")
+        .eq("user_id", userData.user.id)
+        .single();
+
+      if (!isActive) return;
+      if (!error && data?.sections && Array.isArray(data.sections)) {
+        setHomeSections(data.sections);
+      }
+    };
+
+    loadSections();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   return (
     <div
@@ -421,7 +451,7 @@ export default function Home() {
             </section>
 
             <section className="space-y-4">
-              {sections.map((section) => {
+              {homeSections.map((section) => {
                 const SectionIcon = sectionIconMap[section.id as keyof typeof sectionIconMap];
                 return (
                   <div key={section.id} id={section.id} className="py-3">
