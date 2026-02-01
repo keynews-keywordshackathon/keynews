@@ -224,7 +224,7 @@ export async function generateInterestsAction() {
                     </instructions>
 
                     <query_requirements>
-                    - Each query must include a time constraint (e.g., "2024", "2025", "last year", "recent")
+                    - Each query must include a time constraint (e.g., "2024", "2025", "recent", "May 2025")
                     - Focus on actionable, specific search terms rather than generic phrases
                     - Use terminology that would appear in recent articles, news, or discussions
                     - Consider including terms like "trends", "developments", "latest", "new" when appropriate
