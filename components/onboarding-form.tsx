@@ -40,6 +40,9 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
     const [step, setStep] = useState(() => (connectedAccountId ? 2 : 1))
     const totalSteps = 2
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+    const [fullName, setFullName] = useState('')
+    const [location, setLocation] = useState('')
+    const [isSaving, setIsSaving] = useState(false)
     const displayStep = connectedAccountId ? 2 : step
 
     useEffect(() => {
@@ -111,8 +114,29 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
     }
 
 
-    const handleNext = () => {
-        if (!connectedAccountId && step < totalSteps) {
+
+    const handleNext = async () => {
+        if (!connectedAccountId && step === 1) {
+            setIsSaving(true)
+            try {
+                const result = await saveOnboardingData({
+                    fullName,
+                    location,
+                    interests: selectedInterests
+                })
+
+                if (result.success) {
+                    setStep(step + 1)
+                } else {
+                    console.error('Failed to save onboarding data:', result.error)
+                    // Optionally handle error UI here
+                }
+            } catch (error) {
+                console.error('Error in handleNext:', error)
+            } finally {
+                setIsSaving(false)
+            }
+        } else if (!connectedAccountId && step < totalSteps) {
             setStep(step + 1)
         }
     }
@@ -195,11 +219,23 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="fullName">Full Name</Label>
-                                        <Input id="fullName" placeholder="John Doe" required />
+                                        <Input
+                                            id="fullName"
+                                            placeholder="John Doe"
+                                            required
+                                            value={fullName}
+                                            onChange={(e) => setFullName(e.target.value)}
+                                        />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="location">Location</Label>
-                                        <Input id="location" placeholder="New York, NY" required />
+                                        <Input
+                                            id="location"
+                                            placeholder="New York, NY"
+                                            required
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                        />
                                     </div>
                                 </div>
                                 <div className="grid gap-4">
@@ -251,7 +287,9 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                         Back
                     </Button>
                     {displayStep < totalSteps ? (
-                        <Button onClick={handleNext}>Next</Button>
+                        <Button onClick={handleNext} disabled={isSaving}>
+                            {isSaving ? 'Saving...' : 'Next'}
+                        </Button>
                     ) : (
                         <Button type="submit" form="onboarding-form">
                             Complete

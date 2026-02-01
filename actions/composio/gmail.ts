@@ -97,7 +97,7 @@ export async function fetchEmails() {
             type: 'function',
             function: {
                 name: 'GMAIL_FETCH_EMAILS',
-                arguments: JSON.stringify({ max_results: 2 })
+                arguments: JSON.stringify({ max_results: 10 })
             }
         }
 
