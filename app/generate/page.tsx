@@ -193,9 +193,9 @@ export default function GeneratePage() {
     }, []);
 
     return (
-        <div className="container mx-auto p-4 max-w-5xl flex flex-col gap-8 h-screen overflow-hidden">
-            <div className="space-y-2 text-center py-8 flex-shrink-0">
-                <h1 className="text-4xl font-serif font-bold tracking-tight min-h-[1.2em]">
+        <div className="container mx-auto p-4 max-w-5xl flex flex-col gap-4 h-screen overflow-hidden">
+            <div className="space-y-2 text-center py-4 flex-shrink-0">
+                <h1 className="text-3xl font-serif font-bold tracking-tight min-h-[1.2em]">
                     {phase === 'researching' && userName ? `Researching about ${userName}'s interests` :
                         phase === 'generating' ? "Generating personalized news report" :
                             userName ? `Learning more about ${userName}` :
@@ -207,11 +207,11 @@ export default function GeneratePage() {
             {(isGenerating || events.length > 0) && (
                 <div className="w-full max-w-2xl mx-auto relative perspective-[1000px] flex-1 min-h-0">
                     {/* Top fade gradient overlay */}
-                    <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+                    <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
 
                     <div
                         ref={scrollContainerRef}
-                        className="space-y-3 h-full overflow-y-auto px-4 pb-10 pt-10 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                        className="space-y-3 h-full overflow-y-auto px-4 pb-16 pt-6 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         style={{
                             transformStyle: 'preserve-3d',
                             transform: 'rotateX(2deg)' // Slight 3D effect like the reference
