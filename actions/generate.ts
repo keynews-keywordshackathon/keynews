@@ -45,16 +45,12 @@ export async function generateInterestsAction() {
         };
 
         try {
-<<<<<<< HEAD
             await keywordsAI.initialize();
             await keywordsAI.withWorkflow({ name: 'generate_interests_workflow' }, async () => {
                 // 1. Authenticate
                 const supabase = await createClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) throw new Error('Not authenticated');
-=======
-            if (!user) throw new Error('Not authenticated');
->>>>>>> 74fc6ab (made dynamic header)
 
             log(`Authenticated user: ${user.email || 'User'}`);
 
@@ -245,11 +241,7 @@ export async function generateInterestsAction() {
             </constraints>
         `;
 
-<<<<<<< HEAD
-                log('Sending prompt to Gemini...');
-=======
             log(`Sending prompt to Gemini with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, and ${twitterTimelineData.length} timeline tweets...`);
->>>>>>> 74fc6ab (made dynamic header)
 
             // 4. Generate Text
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

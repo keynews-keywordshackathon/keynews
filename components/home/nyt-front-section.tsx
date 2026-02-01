@@ -129,7 +129,7 @@ export function NytFrontSection({
           className="group cursor-pointer"
           onClick={() => handleClick(centerArticle)}
         >
-          {centerArticle.image?.src && !failedImages.has(centerArticle.image.src) && (
+          {centerArticle.image && !(centerArticle.image.src && failedImages.has(centerArticle.image.src)) && (
             <div>
               <div
                 className={`relative h-64 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
@@ -180,7 +180,7 @@ export function NytFrontSection({
               className="group cursor-pointer"
               onClick={() => handleClick(article)}
             >
-              {article.image?.src && !failedImages.has(article.image.src) && (
+              {article.image && !(article.image.src && failedImages.has(article.image.src)) && (
                 <div>
                   <div
                     className={`relative h-40 overflow-hidden newspaper-border-thin bg-gradient-to-br ${

@@ -34,25 +34,35 @@ const getPreviewText = (text: string, sentenceCount = 2) => {
 };
 
 // Transform sections articles into NYTimes format
-const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectionProps, 'onArticleClick'> | null => {
+// Returns both the NYT data and a Set of article titles used in the NYT section
+const transformToNytFormat = (sectionData: typeof sections): { 
+  nytData: Omit<NytFrontSectionProps, 'onArticleClick'> | null;
+  usedArticleTitles: Set<string>;
+} => {
+  const usedArticleTitles = new Set<string>();
   const allArticles = sectionData.flatMap((s) => s.articles);
-  if (allArticles.length === 0) return null;
+  
+  if (allArticles.length === 0) return { nytData: null, usedArticleTitles };
 
   const personalSection = sectionData.find((s) => s.id === "personal");
   const localSection = sectionData.find((s) => s.id === "local");
 
   // Find first article with images for center
   const centerArticle = allArticles.find((a) => a.images && a.images.length > 0) || allArticles[0];
+  usedArticleTitles.add(centerArticle.title);
 
   // Left column: Personal articles (2-3, first has blurb) — exclude the center article
-  const leftArticles = (personalSection?.articles || [])
+  const leftArticlesRaw = (personalSection?.articles || [])
     .filter((a) => a !== centerArticle)
-    .slice(0, 3)
-    .map((article, index) => ({
-      title: article.title,
-      blurb: index === 0 ? getPreviewText(article.summary, 2) : undefined,
-      originalArticle: article,
-    })) as NytArticle[];
+    .slice(0, 3);
+  
+  leftArticlesRaw.forEach((a) => usedArticleTitles.add(a.title));
+  
+  const leftArticles = leftArticlesRaw.map((article, index) => ({
+    title: article.title,
+    blurb: index === 0 ? getPreviewText(article.summary, 2) : undefined,
+    originalArticle: article,
+  })) as NytArticle[];
 
   // Center article: Featured with image
   const centerNytArticle: NytArticle = {
@@ -70,7 +80,10 @@ const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectio
   };
 
   // Bottom row: Local articles (2 articles with images)
-  const bottomArticlesList: NytArticle[] = (localSection?.articles || []).slice(0, 2).map((article) => ({
+  const bottomArticlesRaw = (localSection?.articles || []).slice(0, 2);
+  bottomArticlesRaw.forEach((a) => usedArticleTitles.add(a.title));
+  
+  const bottomArticlesList: NytArticle[] = bottomArticlesRaw.map((article) => ({
     title: article.title,
     blurb: getPreviewText(article.summary, 2),
     image: article.images?.[0]
@@ -91,9 +104,12 @@ const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectio
   ];
 
   return {
-    leftArticles,
-    centerArticle: centerNytArticle,
-    bottomArticles,
+    nytData: {
+      leftArticles,
+      centerArticle: centerNytArticle,
+      bottomArticles,
+    },
+    usedArticleTitles,
   };
 };
 
@@ -208,7 +224,7 @@ export default function Home() {
     };
   }, []);
 
-  const nytData = transformToNytFormat(homeSections);
+  const { nytData, usedArticleTitles } = transformToNytFormat(homeSections);
 
   return (
     <div
@@ -435,7 +451,9 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-2 lg:divide-y-0">
-                      {section.articles.map((article) => {
+                      {section.articles
+                        .filter((article) => !usedArticleTitles.has(article.title))
+                        .map((article) => {
                         const visibleImages = article.images.filter(
                           (image) => image.src && !failedImages.has(image.src)
                         );
