@@ -130,22 +130,24 @@ export function NytFrontSection({
           onClick={() => handleClick(centerArticle)}
         >
           {centerArticle.image?.src && !failedImages.has(centerArticle.image.src) && (
-            <div
-              className={`relative h-64 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
-                centerArticle.image.tint || "from-zinc-500/20 via-white/90 to-white"
-              }`}
-            >
-              <img
-                src={centerArticle.image.src}
-                alt={centerArticle.image.alt || centerArticle.title}
-                className="absolute inset-0 h-full w-full object-cover"
-                onError={() => markImageFailed(centerArticle.image?.src)}
-              />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+            <div>
+              <div
+                className={`relative h-64 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
+                  centerArticle.image.tint || "from-zinc-500/20 via-white/90 to-white"
+                }`}
+              >
+                <img
+                  src={centerArticle.image.src}
+                  alt={centerArticle.image.alt || centerArticle.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={() => markImageFailed(centerArticle.image?.src)}
+                />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+              </div>
               {centerArticle.image.label && (
-                <div className="caption relative z-10 flex h-full items-end p-3 uppercase tracking-[0.22em] text-muted-foreground">
+                <p className="mt-1 text-sm font-medium text-muted-foreground">
                   {centerArticle.image.label}
-                </div>
+                </p>
               )}
             </div>
           )}
@@ -179,22 +181,24 @@ export function NytFrontSection({
               onClick={() => handleClick(article)}
             >
               {article.image?.src && !failedImages.has(article.image.src) && (
-                <div
-                  className={`relative h-40 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
-                    article.image.tint || "from-zinc-500/20 via-white/90 to-white"
-                  }`}
-                >
-                  <img
-                    src={article.image.src}
-                    alt={article.image.alt || article.title}
-                    className="absolute inset-0 h-full w-full object-cover"
-                    onError={() => markImageFailed(article.image?.src)}
-                  />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+                <div>
+                  <div
+                    className={`relative h-40 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
+                      article.image.tint || "from-zinc-500/20 via-white/90 to-white"
+                    }`}
+                  >
+                    <img
+                      src={article.image.src}
+                      alt={article.image.alt || article.title}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      onError={() => markImageFailed(article.image?.src)}
+                    />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+                  </div>
                   {article.image.label && (
-                    <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
+                    <p className="mt-1 text-sm font-medium text-muted-foreground">
                       {article.image.label}
-                    </div>
+                    </p>
                   )}
                 </div>
               )}

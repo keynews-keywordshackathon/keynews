@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
@@ -33,21 +34,25 @@ const getPreviewText = (text: string, sentenceCount = 2) => {
 };
 
 // Transform sections articles into NYTimes format
-const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectionProps, 'onArticleClick'> => {
+const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectionProps, 'onArticleClick'> | null => {
+  const allArticles = sectionData.flatMap((s) => s.articles);
+  if (allArticles.length === 0) return null;
+
   const personalSection = sectionData.find((s) => s.id === "personal");
   const localSection = sectionData.find((s) => s.id === "local");
 
   // Find first article with images for center
-  const centerArticle = sectionData
-    .flatMap((s) => s.articles)
-    .find((a) => a.images && a.images.length > 0) || sectionData[0].articles[0];
+  const centerArticle = allArticles.find((a) => a.images && a.images.length > 0) || allArticles[0];
 
-  // Left column: Personal articles (2-3, first has blurb)
-  const leftArticles = (personalSection?.articles || []).slice(0, 3).map((article, index) => ({
-    title: article.title,
-    blurb: index === 0 && personalSection ? getPreviewText(article.summary, 2) : undefined,
-    originalArticle: article,
-  })) as NytArticle[];
+  // Left column: Personal articles (2-3, first has blurb) — exclude the center article
+  const leftArticles = (personalSection?.articles || [])
+    .filter((a) => a !== centerArticle)
+    .slice(0, 3)
+    .map((article, index) => ({
+      title: article.title,
+      blurb: index === 0 ? getPreviewText(article.summary, 2) : undefined,
+      originalArticle: article,
+    })) as NytArticle[];
 
   // Center article: Featured with image
   const centerNytArticle: NytArticle = {
@@ -101,13 +106,28 @@ const sectionIconMap = {
 type Section = (typeof sections)[number];
 type Article = Section["articles"][number];
 
+const SECTIONS_CACHE_KEY = "keynews-sections-cache";
+
+function getCachedSections(): Section[] {
+  try {
+    const cached = localStorage.getItem(SECTIONS_CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    // ignore
+  }
+  return sections;
+}
+
 export default function Home() {
+  const router = useRouter();
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
-  const [activeArticle, setActiveArticle] = useState<Article | null>(null);
   const [isCrosswordOpen, setIsCrosswordOpen] = useState(false);
   const [isConnectionsOpen, setIsConnectionsOpen] = useState(false);
   const [connectionsPuzzle, setConnectionsPuzzle] = useState<Puzzle | null>(null);
-  const [homeSections, setHomeSections] = useState<Section[]>(sections);
+  const [homeSections, setHomeSections] = useState<Section[]>(getCachedSections);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const markImageFailed = (src?: string) => {
@@ -120,12 +140,14 @@ export default function Home() {
     });
   };
 
-  const activeArticleImages = activeArticle
-    ? activeArticle.images.filter((image) => image.src && !failedImages.has(image.src))
-    : [];
+  const openArticle = (article: Article) => {
+    const key = `keynews-article-${Date.now()}`;
+    localStorage.setItem(key, JSON.stringify(article));
+    router.push(`/article?id=${encodeURIComponent(key)}`);
+  };
 
   useEffect(() => {
-    if (!activeArticle && !isCrosswordOpen && !isConnectionsOpen) {
+    if (!isCrosswordOpen && !isConnectionsOpen) {
       document.body.style.overflow = "";
       return;
     }
@@ -133,7 +155,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [activeArticle, isCrosswordOpen, isConnectionsOpen]);
+  }, [isCrosswordOpen, isConnectionsOpen]);
 
   useEffect(() => {
     if (!isConnectionsOpen || connectionsPuzzle) return;
@@ -175,6 +197,7 @@ export default function Home() {
       if (!isActive) return;
       if (!error && data?.sections && Array.isArray(data.sections)) {
         setHomeSections(data.sections);
+        localStorage.setItem(SECTIONS_CACHE_KEY, JSON.stringify(data.sections));
       }
     };
 
@@ -184,6 +207,8 @@ export default function Home() {
       isActive = false;
     };
   }, []);
+
+  const nytData = transformToNytFormat(homeSections);
 
   return (
     <div
@@ -244,125 +269,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <AnimatePresence>
-        {activeArticle && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-white/20 backdrop-blur-md"
-              onClick={() => setActiveArticle(null)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{
-                type: "spring",
-                damping: 25,
-                stiffness: 300,
-                duration: 0.4
-              }}
-              className="relative w-[80vw] max-w-[80vw] overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-white/15 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.75)] backdrop-blur-2xl"
-            >
-              <div className="flex items-center justify-between border-b border-white/20 px-6 py-4">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
-                    Full Story
-                  </p>
-                  <h3 className="mt-1 text-2xl font-bold font-serif text-black">{activeArticle.title}</h3>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => setActiveArticle(null)}>
-                  Close
-                </Button>
-              </div>
-              <div className="max-h-[80vh] overflow-y-auto px-8 py-8 custom-scrollbar">
-                <div className="space-y-10">
-                  <div className="grid grid-cols-2 gap-4">
-                    {activeArticleImages.map((image) => (
-                      <div
-                        key={`${activeArticle.title}-${image.label}`}
-                        className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${activeArticleImages.length === 1 ? "col-span-2" : ""
-                          }`}
-                      >
-                        {image.src && (
-                          <img
-                            src={image.src}
-                            alt={image.label || activeArticle.title}
-                            className="absolute inset-0 h-full w-full object-cover"
-                            onError={() => markImageFailed(image.src)}
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-                        <div className="relative z-10 flex h-full items-end p-4 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
-                          {image.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="space-y-6">
-                    <p className="text-xl leading-relaxed text-zinc-800 font-serif">
-                      {activeArticle.summary}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500">
-                      <span className="font-medium uppercase tracking-[0.2em]">Sources</span>
-                      {activeArticle.sources.map((source) => (
-                        <Link
-                          key={source.href}
-                          href={source.href}
-                          className="rounded-full bg-white/50 px-3 py-1 transition hover:bg-white/70"
-                          target="_blank"
-                        >
-                          {source.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="relative group/action inline-block">
-                    <Link
-                      href={activeArticle.action.href}
-                      target="_blank"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
-                    >
-                      <Sparkles className="size-4" />
-                      {activeArticle.action.label}
-                    </Link>
-                    
-                    {/* Hover Card */}
-                    <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
-                      <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
-                        {/* Arrow pointer */}
-                        <div className="absolute left-4 top-0 -translate-y-full">
-                          <div className="border-8 border-transparent border-b-white" />
-                        </div>
-                        <div className="absolute left-4 top-0 -translate-y-full">
-                          <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
-                        </div>
-                        <div className="space-y-3 text-sm text-zinc-700">
-                          <div>
-                            <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                              Why it matters
-                            </p>
-                            <p className="mt-1">{activeArticle.relevance}</p>
-                          </div>
-                          <div>
-                            <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                              Why act now
-                            </p>
-                            <p className="mt-1">{activeArticle.actionReason}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
       <AnimatePresence>
         {isCrosswordOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
@@ -496,10 +402,12 @@ export default function Home() {
           <div className="space-y-4">
 
             {/* NYTimes-Style Front Page Section */}
-            <NytFrontSection 
-              {...transformToNytFormat(homeSections)} 
-              onArticleClick={(article) => setActiveArticle(article)}
-            />
+            {nytData && (
+              <NytFrontSection
+                {...nytData}
+                onArticleClick={(article) => openArticle(article)}
+              />
+            )}
 
             {/* Additional sections below */}
             <section className="space-y-4">
@@ -535,7 +443,7 @@ export default function Home() {
                         return (
                           <article
                             key={article.title}
-                            onClick={() => setActiveArticle(article)}
+                            onClick={() => openArticle(article)}
                             className="group cursor-pointer py-4 transition lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
                           >
                             <div className="space-y-3">
@@ -543,21 +451,24 @@ export default function Home() {
                                 {visibleImages.map((image) => (
                                   <div
                                     key={`${article.title}-${image.label}`}
-                                    className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${visibleImages.length === 1 ? "col-span-2" : ""
-                                      }`}
+                                    className={`${visibleImages.length === 1 ? "col-span-2" : ""}`}
                                   >
-                                    {image.src && (
-                                      <img
-                                        src={image.src}
-                                        alt={image.label || article.title}
-                                        className="absolute inset-0 h-full w-full object-cover"
-                                        onError={() => markImageFailed(image.src)}
-                                      />
-                                    )}
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-                                    <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
-                                      {image.label}
+                                    <div className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint}`}>
+                                      {image.src && (
+                                        <img
+                                          src={image.src}
+                                          alt={image.label || article.title}
+                                          className="absolute inset-0 h-full w-full object-cover"
+                                          onError={() => markImageFailed(image.src)}
+                                        />
+                                      )}
+                                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
                                     </div>
+                                    {image.label && (
+                                      <p className="mt-1 text-sm font-medium text-muted-foreground">
+                                        {image.label}
+                                      </p>
+                                    )}
                                   </div>
                                 ))}
                               </div>
@@ -574,7 +485,7 @@ export default function Home() {
                                   variant="ghost"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setActiveArticle(article);
+                                    openArticle(article);
                                   }}
                                 >
                                   Read full article
