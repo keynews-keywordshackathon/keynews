@@ -3,7 +3,7 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY,
+    apiKey: process.env.GEMINI_API_KEY,
 });
 import { generateText } from 'ai';
 import { createStreamableValue } from '@ai-sdk/rsc';
@@ -15,83 +15,94 @@ import { createClient } from '@/lib/supabase/server';
 import { sections as baseSections } from '@/lib/home/sections';
 
 export async function generateInterestsAction() {
-  const stream = createStreamableValue();
+    const stream = createStreamableValue();
 
-  (async () => {
-    const logs: string[] = [];
-    const log = (message: string) => {
-        logs.push(message);
-        stream.update({ type: 'log', message });
-    };
+    (async () => {
+        const logs: string[] = [];
+        const log = (message: string) => {
+            logs.push(message);
+            console.log(message); // Also log to server console
+            stream.update({ type: 'log', message });
+        };
 
-    try {
-        // 1. Authenticate
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
-
-        log(`Authenticated user: ${user.id}`);
-
-        // 2. Fetch Data
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let emailData: any[] = [];
         try {
-            log('Fetching emails...');
-            const emails = await fetchEmails();
-            if (emails.success) {
-                emailData = emails.emails || [];
-                log(`Fetched ${emailData.length} emails.`);
-            } else {
-                log(`Failed to fetch emails: ${emails.error}`);
+            // 1. Authenticate
+            const supabase = await createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            log(`Authenticated user: ${user.id}`);
+
+            // 2. Fetch Data
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let emailData: any[] = [];
+            try {
+                log('Fetching emails...');
+                const emails = await fetchEmails();
+                if (emails.success) {
+                    emailData = emails.emails || [];
+                    log(`Fetched ${emailData.length} emails.`);
+                } else {
+                    log(`Failed to fetch emails: ${emails.error}`);
+                }
+            } catch (e) {
+                log(`Error fetching emails: ${e}`);
             }
-        } catch (e) {
-            log(`Error fetching emails: ${e}`);
-        }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let calendarData: any[] = [];
-        try {
-            log('Fetching calendar events...');
-            const events = await fetchCalendarEvents();
-            if (events.success) {
-                calendarData = events.events || [];
-                log(`Fetched ${calendarData.length} calendar events.`);
-            } else {
-                log(`Failed to fetch calendar events: ${events.error}`);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let calendarData: any[] = [];
+            try {
+                log('Fetching calendar events...');
+                const events = await fetchCalendarEvents();
+                if (events.success) {
+                    calendarData = events.events || [];
+                    log(`Fetched ${calendarData.length} calendar events.`);
+                } else {
+                    log(`Failed to fetch calendar events: ${events.error}`);
+                }
+            } catch (e) {
+                log(`Error fetching calendar events: ${e}`);
             }
-        } catch (e) {
-            log(`Error fetching calendar events: ${e}`);
-        }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let twitterData: any[] = [];
-        try {
-            log('Fetching Twitter user...');
-            const twitterUser = await getTwitterUser();
-            if (twitterUser.success && twitterUser.data) {
-                const twitterId = twitterUser.data.id || (Array.isArray(twitterUser.data) && twitterUser.data[0]?.id);
-                
-                if (twitterId) {
-                    log(`Fetching liked tweets for Twitter ID: ${twitterId}...`);
-                    const tweets = await getLikedTweets(twitterId);
-                    if (tweets.success) {
-                        twitterData = tweets.data || [];
-                        log(`Fetched ${Array.isArray(twitterData) ? twitterData.length : 'some'} liked tweets.`);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let twitterData: any[] = [];
+            try {
+                log('Fetching Twitter user...');
+                const twitterUser = await getTwitterUser();
+                if (twitterUser.success && twitterUser.data) {
+                    // Log structure for confirmation (can remove later if noisy)
+                    console.log('[Debug] Twitter User Data:', JSON.stringify(twitterUser.data, null, 2));
+
+                    // Handle deeply nested structure from Composio: data.data.data.id
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const rawData = twitterUser.data as any;
+                    const twitterId =
+                        rawData.id ||
+                        rawData.data?.id ||
+                        rawData.data?.data?.id ||
+                        (Array.isArray(rawData) && rawData[0]?.id);
+
+                    if (twitterId) {
+                        log(`Fetching liked tweets for Twitter ID: ${twitterId}...`);
+                        const tweets = await getLikedTweets(twitterId);
+                        if (tweets.success) {
+                            twitterData = tweets.data || [];
+                            log(`Fetched ${Array.isArray(twitterData) ? twitterData.length : 'some'} liked tweets.`);
+                        } else {
+                            log(`Failed to fetch liked tweets: ${tweets.error}`);
+                        }
                     } else {
-                        log(`Failed to fetch liked tweets: ${tweets.error}`);
+                        log('Could not determine Twitter User ID from response.');
                     }
                 } else {
-                    log('Could not determine Twitter User ID from response.');
+                    log(`Failed to fetch Twitter user: ${twitterUser.error}`);
                 }
-            } else {
-                log(`Failed to fetch Twitter user: ${twitterUser.error}`);
+            } catch (e) {
+                log(`Error fetching Twitter data: ${e}`);
             }
-        } catch (e) {
-            log(`Error fetching Twitter data: ${e}`);
-        }
 
-        // 3. Prepare Prompt
-        const prompt = `
+            // 3. Prepare Prompt
+            const prompt = `
             <task>
             Analyze user data from multiple sources to identify and articulate interests across three categories: personal, local, and national/global.
             </task>
@@ -110,7 +121,7 @@ export async function generateInterestsAction() {
             </calendar_events>
 
             <twitter_likes>
-            ${JSON.stringify(twitterData.slice(0, 10)).slice(0, 3000)}
+            ${JSON.stringify(Array.isArray(twitterData) ? twitterData.slice(0, 10) : []).slice(0, 3000)}
             </twitter_likes>
             </user_data>
 
@@ -166,39 +177,39 @@ export async function generateInterestsAction() {
             - Ensure all three interests in each category are distinct from each other
             - Output must be valid, parseable JSON
             </constraints>
-        `;  
+        `;
 
-        log('Sending prompt to Gemini...');
+            log('Sending prompt to Gemini...');
 
-        // 4. Generate Text
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let interests: any = {};
-        try {
-            const { text } = await generateText({
-                model: google('gemini-3-pro-preview'),
-                prompt: prompt,
-            });
-            log('Received response from Gemini.');
-            
-            // Try to parse JSON
-            const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
-            interests = JSON.parse(cleanResult);
-            stream.update({ type: 'interests', data: interests });
-        } catch (e) {
-            log(`Error generating/parsing interests: ${e}`);
-            throw e;
-        }
-
-        // 5. Search Exa for News
-        log('Starting Exa news search for generated interests...');
-        const exa = new Exa(process.env.EXA_API_KEY);
-        
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const enrichedInterests: any = { personal: [], local: [], global: [] };
-
-        const generateQueriesForInterest = async (category: string, interest: string) => {
+            // 4. Generate Text
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let interests: any = {};
             try {
-                const queryPrompt = `
+                const { text } = await generateText({
+                    model: google('gemini-3-pro-preview'),
+                    prompt: prompt,
+                });
+                log('Received response from Gemini.');
+
+                // Try to parse JSON
+                const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
+                interests = JSON.parse(cleanResult);
+                stream.update({ type: 'interests', data: interests });
+            } catch (e) {
+                log(`Error generating/parsing interests: ${e}`);
+                throw e;
+            }
+
+            // 5. Search Exa for News
+            log('Starting Exa news search for generated interests...');
+            const exa = new Exa(process.env.EXA_API_KEY);
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const enrichedInterests: any = { personal: [], local: [], global: [] };
+
+            const generateQueriesForInterest = async (category: string, interest: string) => {
+                try {
+                    const queryPrompt = `
                     <task>
                     Generate three concise, targeted web search queries to find recent, relevant information about a specific user interest.
                     </task>
@@ -263,77 +274,77 @@ export async function generateInterestsAction() {
                     - No markdown formatting, code blocks, or explanatory text
                     - Queries should be distinct and non-overlapping
                     </constraints>
-                `;  
-                const { text } = await generateText({
-                    model: google('gemini-3-pro-preview'),
-                    prompt: queryPrompt,
-                });
-                const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
-                const parsed = JSON.parse(cleanResult);
-                if (Array.isArray(parsed)) {
-                    return parsed.filter((q) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
-                }
-                if (parsed && Array.isArray(parsed.queries)) {
-                    return parsed.queries.filter((q: unknown) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
-                }
-                return [interest];
-            } catch (e) {
-                log(`Error generating queries for interest: ${e}`);
-                return [interest];
-            }
-        };
-
-        const processInterest = async (category: string, interest: string) => {
-            try {
-                log(`Generating search queries for ${category} interest: "${interest.substring(0, 30)}..."`);
-                const queries = await generateQueriesForInterest(category, interest);
-                const articles: { title: string | null, url: string, text: string | null, query: string }[] = [];
-
-                for (const query of queries) {
-                    log(`Searching news for query: "${query.substring(0, 40)}..."`);
-                    const result = await exa.searchAndContents(query, {
-                        type: "auto",
-                        useAutoprompt: true,
-                        category: "news",
-                        numResults: 3,
-                        text: true
+                `;
+                    const { text } = await generateText({
+                        model: google('gemini-3-pro-preview'),
+                        prompt: queryPrompt,
                     });
-                    for (const r of result.results) {
-                        articles.push({
-                            title: r.title ?? null,
-                            url: r.url,
-                            text: r.text ?? null,
-                            query
-                        });
+                    const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
+                    const parsed = JSON.parse(cleanResult);
+                    if (Array.isArray(parsed)) {
+                        return parsed.filter((q) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
                     }
+                    if (parsed && Array.isArray(parsed.queries)) {
+                        return parsed.queries.filter((q: unknown) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
+                    }
+                    return [interest];
+                } catch (e) {
+                    log(`Error generating queries for interest: ${e}`);
+                    return [interest];
                 }
-                
-                return {
-                    interest,
-                    queries,
-                    articles
-                };
-            } catch (e) {
-                log(`Error searching Exa for interest: ${e}`);
-                return { interest, queries: [], articles: [], error: String(e) };
-            }
-        };
+            };
 
-        const generateArticlesForInterest = async (
-            category: string,
-            interest: string,
-            articles: { title: string | null, url: string, text: string | null, query: string }[]
-        ) => {
-            try {
-                log(`Generating news cards for ${category} interest: "${interest.substring(0, 30)}..."`);
-                const sourceArticles = articles.slice(0, 6).map((article) => ({
-                    title: article.title,
-                    url: article.url,
-                    text: article.text ? article.text.slice(0, 600) : null,
-                    query: article.query
-                }));
+            const processInterest = async (category: string, interest: string) => {
+                try {
+                    log(`Generating search queries for ${category} interest: "${interest.substring(0, 30)}..."`);
+                    const queries = await generateQueriesForInterest(category, interest);
+                    const articles: { title: string | null, url: string, text: string | null, query: string }[] = [];
 
-                const prompt = `
+                    for (const query of queries) {
+                        log(`Searching news for query: "${query.substring(0, 40)}..."`);
+                        const result = await exa.searchAndContents(query, {
+                            type: "auto",
+                            useAutoprompt: true,
+                            category: "news",
+                            numResults: 3,
+                            text: true
+                        });
+                        for (const r of result.results) {
+                            articles.push({
+                                title: r.title ?? null,
+                                url: r.url,
+                                text: r.text ?? null,
+                                query
+                            });
+                        }
+                    }
+
+                    return {
+                        interest,
+                        queries,
+                        articles
+                    };
+                } catch (e) {
+                    log(`Error searching Exa for interest: ${e}`);
+                    return { interest, queries: [], articles: [], error: String(e) };
+                }
+            };
+
+            const generateArticlesForInterest = async (
+                category: string,
+                interest: string,
+                articles: { title: string | null, url: string, text: string | null, query: string }[]
+            ) => {
+                try {
+                    log(`Generating news cards for ${category} interest: "${interest.substring(0, 30)}..."`);
+                    const sourceArticles = articles.slice(0, 6).map((article) => ({
+                        title: article.title,
+                        url: article.url,
+                        text: article.text ? article.text.slice(0, 600) : null,
+                        query: article.query
+                    }));
+
+                    const prompt = `
                     <task>
                     Generate 1 to 2 detailed news report-length articles based on the interest and the source articles.
                     </task>
@@ -390,87 +401,87 @@ export async function generateInterestsAction() {
                     </output_format>
                 `;
 
-                const { text } = await generateText({
-                    model: google('gemini-3-pro-preview'),
-                    prompt
-                });
+                    const { text } = await generateText({
+                        model: google('gemini-3-pro-preview'),
+                        prompt
+                    });
 
-                const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
-                const parsed = JSON.parse(cleanResult);
-                if (Array.isArray(parsed)) {
-                    return parsed;
+                    const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
+                    const parsed = JSON.parse(cleanResult);
+                    if (Array.isArray(parsed)) {
+                        return parsed;
+                    }
+                    return [];
+                } catch (e) {
+                    log(`Error generating news cards: ${e}`);
+                    return [];
                 }
-                return [];
-            } catch (e) {
-                log(`Error generating news cards: ${e}`);
-                return [];
-            }
-        };
-
-        // Process all categories
-        for (const category of ['personal', 'local', 'global']) {
-            if (interests[category] && Array.isArray(interests[category])) {
-                for (const interest of interests[category]) {
-                    const enriched = await processInterest(category, interest);
-                    enrichedInterests[category].push(enriched);
-                    // Stream partial update if needed, or just logs
-                    stream.update({ type: 'log', message: `Found ${enriched.articles.length} articles for interest.` });
-                }
-            }
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const generatedSections: any = { personal: [], local: [], global: [] };
-        for (const category of ['personal', 'local', 'global']) {
-            for (const item of enrichedInterests[category]) {
-                const generatedArticles = await generateArticlesForInterest(category, item.interest, item.articles || []);
-                generatedSections[category].push({
-                    interest: item.interest,
-                    articles: generatedArticles
-                });
-                stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest.` });
-            }
-        }
-
-        const savedSections = baseSections.map((section) => {
-            const items = generatedSections[section.id] || [];
-            const articles = items.flatMap((item: { articles?: unknown }) =>
-                Array.isArray(item.articles) ? item.articles : []
-            );
-            return {
-                ...section,
-                articles
             };
-        });
 
-        try {
-            const { error } = await supabase
-                .from('user_generated_sections')
-                .upsert({
-                    user_id: user.id,
-                    sections: savedSections,
-                    updated_at: new Date().toISOString()
-                }, {
-                    onConflict: 'user_id'
-                });
-
-            if (error) {
-                log(`Failed to save generated sections: ${error.message}`);
-            } else {
-                log('Saved generated sections to Supabase.');
+            // Process all categories
+            for (const category of ['personal', 'local', 'global']) {
+                if (interests[category] && Array.isArray(interests[category])) {
+                    for (const interest of interests[category]) {
+                        const enriched = await processInterest(category, interest);
+                        enrichedInterests[category].push(enriched);
+                        // Stream partial update if needed, or just logs
+                        stream.update({ type: 'log', message: `Found ${enriched.articles.length} articles for interest.` });
+                    }
+                }
             }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const generatedSections: any = { personal: [], local: [], global: [] };
+            for (const category of ['personal', 'local', 'global']) {
+                for (const item of enrichedInterests[category]) {
+                    const generatedArticles = await generateArticlesForInterest(category, item.interest, item.articles || []);
+                    generatedSections[category].push({
+                        interest: item.interest,
+                        articles: generatedArticles
+                    });
+                    stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest.` });
+                }
+            }
+
+            const savedSections = baseSections.map((section) => {
+                const items = generatedSections[section.id] || [];
+                const articles = items.flatMap((item: { articles?: unknown }) =>
+                    Array.isArray(item.articles) ? item.articles : []
+                );
+                return {
+                    ...section,
+                    articles
+                };
+            });
+
+            try {
+                const { error } = await supabase
+                    .from('user_generated_sections')
+                    .upsert({
+                        user_id: user.id,
+                        sections: savedSections,
+                        updated_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'user_id'
+                    });
+
+                if (error) {
+                    log(`Failed to save generated sections: ${error.message}`);
+                } else {
+                    log('Saved generated sections to Supabase.');
+                }
+            } catch (e) {
+                log(`Error saving generated sections: ${e}`);
+            }
+
+            stream.update({ type: 'final_result', data: { interests, enrichedInterests, generatedSections } });
+            stream.done();
+
         } catch (e) {
-            log(`Error saving generated sections: ${e}`);
+            log(`Fatal error: ${e}`);
+            stream.error(e);
         }
+    })();
 
-        stream.update({ type: 'final_result', data: { interests, enrichedInterests, generatedSections } });
-        stream.done();
-
-    } catch (e) {
-        log(`Fatal error: ${e}`);
-        stream.error(e);
-    }
-  })();
-
-  return { object: stream.value };
+    return { object: stream.value };
 }
