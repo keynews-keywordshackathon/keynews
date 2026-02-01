@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   Bot,
-  CloudSun,
   Gamepad2,
   Globe2,
   MapPin,
@@ -23,6 +22,7 @@ import type { PuzzleData } from "@/lib/crossword/types";
 import { sections, weatherPanel, stockPanel } from "@/lib/home/sections";
 import type { Puzzle } from "@/lib/connections/types";
 import { NytFrontSection } from "@/components/home/nyt-front-section";
+import { WeatherPanel } from "@/components/home/weather-panel";
 import type { NytFrontSectionProps, NytArticle } from "@/lib/home/nyt-types";
 import { createClient } from "@/lib/supabase/client";
 
@@ -773,69 +773,7 @@ export default function Home() {
           </div>
 
           <aside className="space-y-4">
-            <section id="weather" className="newspaper-border p-4">
-              <div className="space-y-4">
-                <div>
-                  <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
-                    <CloudSun className="size-4 text-muted-foreground" />
-                    {weatherPanel.title}
-                  </p>
-                  <h3 className="headline-secondary mt-2 text-2xl text-foreground">{weatherPanel.location}</h3>
-                  <p className="article-body mt-2">{weatherPanel.summary}</p>
-                </div>
-                <div className="grid gap-0">
-                  {weatherPanel.forecast.map((item) => (
-                    <div
-                      key={item.day}
-                      className="flex items-center justify-between border-b border-border py-3 text-sm last:border-0"
-                    >
-                      <div>
-                        <p className="font-semibold">{item.day}</p>
-                        <p className="text-xs text-muted-foreground">{item.note}</p>
-                      </div>
-                      <p className="font-semibold text-foreground">{item.temp}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="relative group/action inline-block">
-                  <Link
-                    href={weatherPanel.action.href}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
-                  >
-                    <Sparkles className="size-4" />
-                    {weatherPanel.action.label}
-                  </Link>
-                  
-                  {/* Hover Card */}
-                  <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
-                    <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
-                      {/* Arrow pointer */}
-                      <div className="absolute left-4 top-0 -translate-y-full">
-                        <div className="border-8 border-transparent border-b-white" />
-                      </div>
-                      <div className="absolute left-4 top-0 -translate-y-full">
-                        <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
-                      </div>
-                      <div className="space-y-3 text-sm text-zinc-700">
-                        <div>
-                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                            Why it matters
-                          </p>
-                          <p className="mt-1">{weatherPanel.relevance}</p>
-                        </div>
-                        <div>
-                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                            Why act now
-                          </p>
-                          <p className="mt-1">{weatherPanel.actionReason}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <WeatherPanel initialData={weatherPanel} />
 
             <div className="border-t border-b border-border" />
 

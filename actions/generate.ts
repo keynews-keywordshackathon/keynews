@@ -188,15 +188,15 @@ export async function generateInterestsAction() {
 
                 log('Sending prompt to Gemini...');
 
-                // 4. Generate Text
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let interests: any = {};
-                try {
-                    const { text } = await keywordsAI.withTask({ name: 'generate_interests' }, async () => generateText({
-                        model: google('gemini-3-pro-preview'),
-                        prompt: prompt,
-                    }));
-                    log('Received response from Gemini.');
+            // 4. Generate Text
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let interests: any = {};
+            try {
+                const { text } = await generateText({
+                    model: google('gemini-3-pro-preview'),
+                    prompt: prompt,
+                });
+                log('Received response from Gemini.');
 
                     // Try to parse JSON
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
@@ -282,24 +282,24 @@ export async function generateInterestsAction() {
                     - Queries should be distinct and non-overlapping
                     </constraints>
                 `;
-                        const { text } = await keywordsAI.withTask({ name: 'generate_queries' }, async () => generateText({
-                            model: google('gemini-3-pro-preview'),
-                            prompt: queryPrompt,
-                        }));
-                        const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
-                        const parsed = JSON.parse(cleanResult);
-                        if (Array.isArray(parsed)) {
-                            return parsed.filter((q) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
-                        }
-                        if (parsed && Array.isArray(parsed.queries)) {
-                            return parsed.queries.filter((q: unknown) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
-                        }
-                        return [interest];
-                    } catch (e) {
-                        log(`Error generating queries for interest: ${e}`);
-                        return [interest];
+                    const { text } = await generateText({
+                        model: google('gemini-3-pro-preview'),
+                        prompt: queryPrompt,
+                    });
+                    const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
+                    const parsed = JSON.parse(cleanResult);
+                    if (Array.isArray(parsed)) {
+                        return parsed.filter((q) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
                     }
-                };
+                    if (parsed && Array.isArray(parsed.queries)) {
+                        return parsed.queries.filter((q: unknown) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
+                    }
+                    return [interest];
+                } catch (e) {
+                    log(`Error generating queries for interest: ${e}`);
+                    return [interest];
+                }
+            };
 
                 const processInterest = async (category: string, interest: string) => {
                     try {
@@ -411,10 +411,10 @@ export async function generateInterestsAction() {
                     </output_format>
                 `;
 
-                        const { text } = await keywordsAI.withTask({ name: 'generate_articles' }, async () => generateText({
-                            model: google('gemini-3-pro-preview'),
-                            prompt
-                        }));
+                    const { text } = await generateText({
+                        model: google('gemini-3-pro-preview'),
+                        prompt
+                    });
 
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                         const parsed = JSON.parse(cleanResult);

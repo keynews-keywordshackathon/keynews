@@ -213,7 +213,7 @@ export default function GeneratePage() {
 
                     <div
                         ref={scrollContainerRef}
-                        className="space-y-3 max-h-[500px] overflow-y-auto pr-2 pb-10 pt-10 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                        className="space-y-3 max-h-[500px] overflow-y-auto px-4 pb-10 pt-10 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         style={{
                             transformStyle: 'preserve-3d',
                             transform: 'rotateX(2deg)' // Slight 3D effect like the reference

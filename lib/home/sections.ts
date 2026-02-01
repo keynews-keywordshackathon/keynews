@@ -239,19 +239,19 @@ export const sections: Section[] = [
 
 export const weatherPanel = {
   title: "Weather",
-  location: "Urbana-Champaign",
-  summary: "Snow arrives Thursday night with sub-freezing lows through Saturday morning.",
+  location: "Chicago",
+  summary: "Loading weather data...",
   forecast: [
-    { day: "Thu", temp: "28° / 18°", note: "Snow after 9 PM" },
-    { day: "Fri", temp: "24° / 14°", note: "Windy, icy" },
-    { day: "Sat", temp: "30° / 20°", note: "Flurries" },
+    { day: "Today", temp: "—", note: "Loading..." },
+    { day: "Tomorrow", temp: "—", note: "Loading..." },
+    { day: "Later", temp: "—", note: "Loading..." },
   ],
-  relevance: "Your morning commute overlaps with the lowest temperatures this week.",
-  actionReason: "Buying boots before the storm avoids low inventory and delivery delays.",
+  relevance: "Weather conditions for your location.",
+  actionReason: "Plan your day based on current conditions.",
   action: {
-    label: "Grab insulated boots and traction grips today.",
-    cta: "Shop boots",
-    href: "https://www.nike.com/w/winter-boots-4iw0kzy7ok",
+    label: "View detailed forecast",
+    cta: "See more",
+    href: "https://openweathermap.org/",
   },
 };
 
