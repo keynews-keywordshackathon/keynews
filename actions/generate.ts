@@ -10,7 +10,7 @@ import { createStreamableValue } from '@ai-sdk/rsc';
 import Exa from 'exa-js';
 import { fetchEmails } from './composio/gmail';
 import { fetchCalendarEvents } from './composio/google-calendar';
-import { getTwitterUser, getLikedTweets } from './composio/twitter';
+import { getTwitterUser, getLikedTweets, getHomeTimeline } from './composio/twitter';
 import { createClient } from '@/lib/supabase/server';
 import { sections as baseSections } from '@/lib/home/sections';
 import { KeywordsAITelemetry } from '@keywordsai/tracing';
@@ -38,47 +38,53 @@ export async function generateInterestsAction() {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) throw new Error('Not authenticated');
 
-                log(`Authenticated user: ${user.id}`);
+            log(`Authenticated user: ${user.email || 'User'}`);
 
-                // 2. Fetch Data
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let emailData: any[] = [];
-                try {
-                    log('Fetching emails...');
-                    const emails = await fetchEmails();
-                    if (emails.success) {
-                        emailData = emails.emails || [];
-                        log(`Fetched ${emailData.length} emails.`);
-                    } else {
-                        log(`Failed to fetch emails: ${emails.error}`);
-                    }
-                } catch (e) {
-                    log(`Error fetching emails: ${e}`);
+            // 2. Fetch Data
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let emailData: any[] = [];
+            try {
+                log('Fetching emails...');
+                const emails = await fetchEmails();
+                if (emails.success) {
+                    emailData = emails.emails || [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const recentEmails = emailData.slice(0, 5).map((e: any) => `"${e.subject}"`).join('\n- ');
+                    log(`Fetched ${emailData.length} emails. Recent subjects:\n- ${recentEmails}`);
+                } else {
+                    log(`Failed to fetch emails: ${emails.error}`);
                 }
+            } catch (e) {
+                log(`Error fetching emails: ${e}`);
+            }
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let calendarData: any[] = [];
-                try {
-                    log('Fetching calendar events...');
-                    const events = await fetchCalendarEvents();
-                    if (events.success) {
-                        calendarData = events.events || [];
-                        log(`Fetched ${calendarData.length} calendar events.`);
-                    } else {
-                        log(`Failed to fetch calendar events: ${events.error}`);
-                    }
-                } catch (e) {
-                    log(`Error fetching calendar events: ${e}`);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let calendarData: any[] = [];
+            try {
+                log('Fetching calendar events...');
+                const events = await fetchCalendarEvents();
+                if (events.success) {
+                    calendarData = events.events || [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const recentEvents = calendarData.slice(0, 5).map((e: any) => `"${e.summary || 'Event'}"`).join('\n- ');
+                    log(`Fetched ${calendarData.length} calendar events. Recent:\n- ${recentEvents}`);
+                } else {
+                    log(`Failed to fetch calendar events: ${events.error}`);
                 }
+            } catch (e) {
+                log(`Error fetching calendar events: ${e}`);
+            }
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let twitterData: any[] = [];
-                try {
-                    log('Fetching Twitter user...');
-                    const twitterUser = await getTwitterUser();
-                    if (twitterUser.success && twitterUser.data) {
-                        // Log structure for confirmation (can remove later if noisy)
-                        console.log('[Debug] Twitter User Data:', JSON.stringify(twitterUser.data, null, 2));
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let twitterData: any[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let twitterTimelineData: any[] = [];
+            try {
+                log('Fetching Twitter user...');
+                const twitterUser = await getTwitterUser();
+                if (twitterUser.success && twitterUser.data) {
+                    // Log structure for confirmation (can remove later if noisy)
+                    console.log('[Debug] Twitter User Data:', JSON.stringify(twitterUser.data, null, 2));
 
                         // Handle deeply nested structure from Composio: data.data.data.id
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -89,24 +95,46 @@ export async function generateInterestsAction() {
                             rawData.data?.data?.id ||
                             (Array.isArray(rawData) && rawData[0]?.id);
 
-                        if (twitterId) {
-                            log(`Fetching liked tweets for Twitter ID: ${twitterId}...`);
-                            const tweets = await getLikedTweets(twitterId);
-                            if (tweets.success) {
-                                twitterData = tweets.data || [];
-                                log(`Fetched ${Array.isArray(twitterData) ? twitterData.length : 'some'} liked tweets.`);
-                            } else {
-                                log(`Failed to fetch liked tweets: ${tweets.error}`);
-                            }
+                    if (twitterId) {
+                        log(`Fetching liked tweets for user @${twitterUser.data.username || 'unknown'}...`);
+                        const tweets = await getLikedTweets(twitterId);
+                        if (tweets.success) {
+                            // Handle nested structure: rawData.data.data is the array of tweets
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const rawTweets = (tweets.data as any)?.data?.data || (tweets.data as any)?.data || tweets.data || [];
+                            twitterData = Array.isArray(rawTweets) ? rawTweets : [];
+
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const snippets = twitterData.slice(0, 5).map((t: any) => `"${t.text?.substring(0, 100).replace(/\n/g, ' ')}..."`).join('\n- ');
+                            log(`Fetched ${twitterData.length} liked tweets:\n- ${snippets}`);
                         } else {
-                            log('Could not determine Twitter User ID from response.');
+                            log(`Failed to fetch liked tweets: ${tweets.error}`);
+                        }
+
+                        // Fetch Home Timeline
+                        log(`Fetching home timeline for user @${twitterUser.data.username || 'unknown'}...`);
+                        const timeline = await getHomeTimeline(twitterId);
+                        if (timeline.success) {
+                            // Handle nested structure: rawData.data.data is the array of tweets
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const rawTimeline = (timeline.data as any)?.data?.data || (timeline.data as any)?.data || timeline.data || [];
+                            twitterTimelineData = Array.isArray(rawTimeline) ? rawTimeline : [];
+
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const snippets = twitterTimelineData.slice(0, 5).map((t: any) => `"${t.text?.substring(0, 100).replace(/\n/g, ' ')}..."`).join('\n- ');
+                            log(`Fetched ${twitterTimelineData.length} timeline tweets:\n- ${snippets}`);
+                        } else {
+                            log(`Failed to fetch home timeline: ${timeline.error}`);
                         }
                     } else {
-                        log(`Failed to fetch Twitter user: ${twitterUser.error}`);
+                        log('Could not determine Twitter User ID from response.');
                     }
-                } catch (e) {
-                    log(`Error fetching Twitter data: ${e}`);
+                } else {
+                    log(`Failed to fetch Twitter user: ${twitterUser.error}`);
                 }
+            } catch (e) {
+                log(`Error fetching Twitter data: ${e}`);
+            }
 
                 // 3. Prepare Prompt
                 const prompt = `
@@ -130,6 +158,12 @@ export async function generateInterestsAction() {
             <twitter_likes>
             ${JSON.stringify(Array.isArray(twitterData) ? twitterData.slice(0, 10) : []).slice(0, 3000)}
             </twitter_likes>
+
+            <twitter_timeline>
+            ${JSON.stringify(Array.isArray(twitterTimelineData) ? twitterTimelineData.slice(0, 10) : []).slice(0, 3000)}
+            </twitter_timeline>
+
+
             </user_data>
 
             <instructions>
