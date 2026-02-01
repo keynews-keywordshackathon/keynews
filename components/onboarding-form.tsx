@@ -261,7 +261,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                 </p>
                                 <div className="grid grid-cols-2 gap-4 w-full mt-10">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="fullName">Full Name</Label>
+                                        <Label htmlFor="fullName">Name</Label>
                                         <Input
                                             id="fullName"
                                             placeholder="John Doe"
