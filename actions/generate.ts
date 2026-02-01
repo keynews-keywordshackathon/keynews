@@ -92,11 +92,11 @@ export async function generateInterestsAction() {
         // 3. Prepare Prompt
         const prompt = `
             <task>
-            Analyze user data from multiple sources to identify and articulate specific interests across three categories: personal, local, and national/global.
+            Analyze user data from multiple sources to identify and articulate interests across three categories: personal, local, and national/global.
             </task>
 
             <context>
-            This analysis will be used to understand the user's engagement patterns and preferences across different spheres of their life. The goal is to surface meaningful, specific interests that reflect genuine engagement, not generic categories.
+            This analysis will be used to understand the user's engagement patterns and preferences across different spheres of their life. The goal is to surface meaningful interests that connect to the user's signals, not list the activities themselves.
             </context>
 
             <user_data>
@@ -116,18 +116,24 @@ export async function generateInterestsAction() {
             <instructions>
             1. Analyze the user data above to identify patterns, recurring themes, and areas of engagement
             2. For each of the three categories (personal, local, global), identify exactly three distinct interests
-            3. For each interest, write one detailed paragraph that includes:
+            3. Personal interests must be related to the user's activities but NOT the activities themselves
+            - Example: if the user plays chess, infer interest in local chess tournaments, clubs, or training groups
+            - Example: if the user uses data analytics, infer interest in data science clubs, meetups, or workshops
+            4. Local interests must be based on the user's location only, focusing on community events, city issues, or local institutions relevant to that location
+            5. Global interests must be broader, high-level themes inferred from user signals, not specific events
+            - Example: if the user joins hackathons, infer interests like computer science, software engineering, tech innovation, or big tech trends
+            6. For each interest, write one detailed paragraph that includes:
             - The specific interest or topic area
             - Concrete evidence from the data that suggests this interest (e.g., specific emails, events, or tweets)
             - How this interest relates to the user's life and activities
             - Why this is a meaningful interest (not just a passing mention)
-            4. Ensure interests are specific and actionable, not generic (e.g., "urban gardening with focus on native plants" rather than "gardening")
+            7. Ensure interests are specific and actionable, not generic unless it is a global interest
             </instructions>
 
             <interest_categories>
-            - **Personal**: Interests related to hobbies, self-improvement, health, personal development, or individual pursuits
-            - **Local**: Interests tied to the user's community, city, neighborhood, or regional issues and events
-            - **Global**: Interests in national or international topics, trends, issues, or movements
+            - **Personal**: Interest themes connected to the user's activities, phrased as opportunities or communities rather than the activity itself
+            - **Local**: Location-driven interests tied to the user's city, neighborhood, or regional institutions and events
+            - **Global**: Broad national or international themes inferred from user signals (industries, fields, or movements)
             </interest_categories>
 
             <output_format>
@@ -154,7 +160,8 @@ export async function generateInterestsAction() {
             <constraints>
             - Each paragraph must be substantive (4-6 sentences minimum)
             - Include specific references to the data provided
-            - Avoid generic or overly broad interests
+            - Personal and local interests should be specific and actionable
+            - Global interests can be broader but still grounded in user signals
             - Ensure all three interests in each category are distinct from each other
             - Output must be valid, parseable JSON
             </constraints>
@@ -311,6 +318,94 @@ export async function generateInterestsAction() {
             }
         };
 
+        const generateArticlesForInterest = async (
+            category: string,
+            interest: string,
+            articles: { title: string | null, url: string, text: string | null, query: string }[]
+        ) => {
+            try {
+                log(`Generating news cards for ${category} interest: "${interest.substring(0, 30)}..."`);
+                const sourceArticles = articles.slice(0, 6).map((article) => ({
+                    title: article.title,
+                    url: article.url,
+                    text: article.text ? article.text.slice(0, 600) : null,
+                    query: article.query
+                }));
+
+                const prompt = `
+                    <task>
+                    Generate 1 to 2 detailed news report-length articles based on the interest and the source articles.
+                    </task>
+
+                    <interest>
+                    <category>${category}</category>
+                    <description>${interest}</description>
+                    </interest>
+
+                    <source_articles>
+                    ${JSON.stringify(sourceArticles)}
+                    </source_articles>
+
+                    <requirements>
+                    - Return ONLY valid JSON
+                    - Output must be a JSON array of 1 to 2 objects
+                    - Each object must match the article shape used in lib/home/sections.ts
+                    - Each summary must be a news report length (500-800 words)
+                    - Write in a newspaper voice with a New York Times-style tone
+                    - Summaries and titles must read like news articles, not blogs, vlogs, or suggestions
+                    - relevance must be a short phrase (max 8 words)
+                    - actionReason must be a short phrase (max 8 words)
+                    - Use source URLs in the sources list and action hrefs
+                    - Include at least 2 sources per article
+                    - Keep summaries grounded in source_articles content
+                    - Use 2 image entries per article
+                    </requirements>
+
+                    <image_tints>
+                    ["from-zinc-500/20 via-white/90 to-white","from-zinc-400/20 via-white/90 to-white","from-zinc-600/20 via-white/90 to-white","from-zinc-200/50 via-zinc-100/30 to-transparent"]
+                    </image_tints>
+
+                    <output_format>
+                    [
+                      {
+                        "title": "string",
+                        "summary": "string",
+                        "relevance": "string",
+                        "actionReason": "string",
+                        "images": [
+                          { "label": "string", "tint": "string" },
+                          { "label": "string", "tint": "string" }
+                        ],
+                        "sources": [
+                          { "label": "string", "href": "string" }
+                        ],
+                        "action": {
+                          "label": "string",
+                          "cta": "string",
+                          "href": "string"
+                        }
+                      }
+                    ]
+                    </output_format>
+                `;
+
+                const { text } = await generateText({
+                    model: google('gemini-3-pro-preview'),
+                    prompt
+                });
+
+                const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
+                const parsed = JSON.parse(cleanResult);
+                if (Array.isArray(parsed)) {
+                    return parsed;
+                }
+                return [];
+            } catch (e) {
+                log(`Error generating news cards: ${e}`);
+                return [];
+            }
+        };
+
         // Process all categories
         for (const category of ['personal', 'local', 'global']) {
             if (interests[category] && Array.isArray(interests[category])) {
@@ -323,7 +418,20 @@ export async function generateInterestsAction() {
             }
         }
 
-        stream.update({ type: 'final_result', data: enrichedInterests });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const generatedSections: any = { personal: [], local: [], global: [] };
+        for (const category of ['personal', 'local', 'global']) {
+            for (const item of enrichedInterests[category]) {
+                const generatedArticles = await generateArticlesForInterest(category, item.interest, item.articles || []);
+                generatedSections[category].push({
+                    interest: item.interest,
+                    articles: generatedArticles
+                });
+                stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest.` });
+            }
+        }
+
+        stream.update({ type: 'final_result', data: { interests, enrichedInterests, generatedSections } });
         stream.done();
 
     } catch (e) {

@@ -9,7 +9,6 @@ import {
   TrendingUp,
   Sparkles,
 } from "lucide-react";
-import Link from "next/link";
 import { sections, weatherPanel, stockPanel } from "@/lib/home/sections";
 
 const getPreviewText = (text: string, sentenceCount = 2) => {

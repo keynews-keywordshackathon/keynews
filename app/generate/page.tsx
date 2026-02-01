@@ -6,11 +6,41 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { readStreamableValue } from '@ai-sdk/rsc';
 
+type SourceArticle = {
+    title: string | null;
+    url: string;
+    text: string | null;
+    query?: string;
+};
+
+type EnrichedInterest = {
+    interest: string;
+    articles?: SourceArticle[];
+};
+
+type GeneratedArticle = {
+    title: string;
+    summary: string;
+    relevance: string;
+    actionReason: string;
+    images?: { label: string; tint: string }[];
+    sources?: { label: string; href: string }[];
+    action?: { label?: string; cta?: string; href?: string };
+};
+
+type GeneratedItem = {
+    interest: string;
+    articles?: GeneratedArticle[];
+};
+
 export default function GeneratePage() {
     const [isLoading, setIsLoading] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<{
+        interests?: Record<string, string[]>;
+        enrichedInterests?: Record<string, EnrichedInterest[]>;
+        generatedSections?: Record<string, GeneratedItem[]>;
+    } | null>(null);
 
     const handleGenerate = async () => {
         setIsLoading(true);
@@ -61,9 +91,13 @@ export default function GeneratePage() {
 
             {result && (
                 <div className="grid gap-6">
-                    <InterestSection title="Personal Interests" interests={result.personal} />
-                    <InterestSection title="Local Interests" interests={result.local} />
-                    <InterestSection title="Global Interests" interests={result.global} />
+                    <InterestSection title="Personal Interests" interests={result.enrichedInterests?.personal || result.personal} />
+                    <InterestSection title="Local Interests" interests={result.enrichedInterests?.local || result.local} />
+                    <InterestSection title="Global Interests" interests={result.enrichedInterests?.global || result.global} />
+
+                    <GeneratedSection title="Generated Personal News" items={result.generatedSections?.personal} />
+                    <GeneratedSection title="Generated Local News" items={result.generatedSections?.local} />
+                    <GeneratedSection title="Generated Global News" items={result.generatedSections?.global} />
                     
                     <Card className="mt-8">
                         <CardHeader><CardTitle>Full JSON Result</CardTitle></CardHeader>
@@ -79,8 +113,7 @@ export default function GeneratePage() {
     );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function InterestSection({ title, interests }: { title: string, interests: any[] }) {
+function InterestSection({ title, interests }: { title: string, interests: EnrichedInterest[] | undefined }) {
     if (!interests || !Array.isArray(interests)) return null;
     return (
         <Card>
@@ -94,8 +127,7 @@ function InterestSection({ title, interests }: { title: string, interests: any[]
                             <h3 className="font-semibold text-lg mb-2">{item.interest}</h3>
                             {item.articles && item.articles.length > 0 ? (
                                 <ul className="space-y-2">
-                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                    {item.articles.map((article: any, j: number) => (
+                                    {item.articles.map((article, j) => (
                                         <li key={j} className="text-sm">
                                             <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">
                                                 {article.title}
@@ -111,6 +143,60 @@ function InterestSection({ title, interests }: { title: string, interests: any[]
                             ) : (
                                 <p className="text-sm text-muted-foreground italic">No articles found.</p>
                             )}
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function GeneratedSection({ title, items }: { title: string, items: GeneratedItem[] | undefined }) {
+    if (!items || !Array.isArray(items) || items.length === 0) return null;
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-6">
+                    {items.map((item, i) => (
+                        <div key={i} className="border-b pb-6 last:border-0">
+                            <h3 className="font-semibold text-lg mb-3">{item.interest}</h3>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                {Array.isArray(item.articles) && item.articles.length > 0 ? (
+                                    item.articles.map((article, j) => (
+                                        <Card key={j} className="h-full">
+                                            <CardHeader>
+                                                <CardTitle className="text-base">{article.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3 text-sm">
+                                                <p className="text-muted-foreground">{article.summary}</p>
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Why it matters</p>
+                                                    <p>{article.relevance}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Why act now</p>
+                                                    <p>{article.actionReason}</p>
+                                                </div>
+                                                {article.action?.href && (
+                                                    <a
+                                                        href={article.action.href}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-600 hover:underline text-sm font-medium"
+                                                    >
+                                                        {article.action.label || 'Read more'}
+                                                    </a>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-muted-foreground italic">No generated articles.</p>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
