@@ -161,7 +161,28 @@ export async function generateInterestsAction() {
                     log(`Error fetching Twitter data: ${e}`);
                 }
 
-                // 3. Prepare Prompt
+                // 3. Prepare Prompt for Keywords AI
+                const keywordsAIHeaderContent = {
+                    "prompt": {
+                        "prompt_id": "1d855daae9bd471091a17d11f5fdad31",
+                        "variables": {
+                            "emailData": JSON.stringify(emailData.slice(0, 10)).slice(0, 3000),
+                            "currentYear": currentYear.toString(),
+                            "twitterData": JSON.stringify(Array.isArray(twitterData) ? twitterData.slice(0, 10) : []).slice(0, 3000),
+                            "calendarData": JSON.stringify(calendarData.slice(0, 10)).slice(0, 3000),
+                            "currentMonth": currentMonth,
+                            "currentDateString": currentDateString,
+                            "twitterTimelineData": JSON.stringify(Array.isArray(twitterTimelineData) ? twitterTimelineData.slice(0, 10) : []).slice(0, 3000)
+                        }
+                    }
+                };
+                const encoded = Buffer.from(JSON.stringify(keywordsAIHeaderContent)).toString('base64');
+
+                const keywordsAIGoogle = createGoogleGenerativeAI({
+                    baseURL: process.env.KEYWORDSAI_ENDPOINT_LOCAL,
+                    apiKey: process.env.KEYWORDSAI_API_KEY_TEST,
+                });
+
                 const prompt = `
             <task>
             Analyze user data from multiple sources to identify and articulate interests across three categories: personal, local, and national/global.
@@ -248,17 +269,26 @@ export async function generateInterestsAction() {
             </constraints>
         `;
 
-                log(`Sending prompt to Gemini with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, and ${twitterTimelineData.length} timeline tweets...`);
+                log(`Sending prompt to Keywords AI with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, and ${twitterTimelineData.length} timeline tweets...`);
 
-                // 4. Generate Text
+                // 4. Generate Text using Keywords AI
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let interests: any = {};
                 try {
                     const { text } = await generateText({
-                        model: google('gemini-3-flash-preview'),
+                        model: keywordsAIGoogle("gemini-3-flash-preview"),
+                        providerOptions: {
+                            google: {
+                                headers: {
+                                    "X-Data-Keywordsai-Params": encoded
+                                }
+                            }
+                        },
                         prompt: prompt,
+                        temperature: 0.5,
                     });
-                    log('Received list of interests from Gemini.');
+                    
+                    log('Received list of interests from Keywords AI.');
 
                     // Try to parse JSON
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
@@ -362,8 +392,31 @@ export async function generateInterestsAction() {
                     - Queries should be distinct and non-overlapping
                     </constraints>
                 `;
+
+                        // Keywords AI header for queries
+                        const keywordsAIHeaderContent = {
+                            "prompt": {
+                                "prompt_id": "16cb04a1f0c64f01b65632abedaa5f1a",
+                                "variables": {
+                                    "currentYear": currentYear.toString(),
+                                    "currentDateString": currentDateString,
+                                    "currentMonth": currentMonth,
+                                    "category": category,
+                                    "interest": interest
+                                }
+                            }
+                        };
+                        const encoded = Buffer.from(JSON.stringify(keywordsAIHeaderContent)).toString('base64');
+
                         const { text } = await generateText({
-                            model: google('gemini-3-flash-preview'),
+                            model: keywordsAIGoogle("gemini-3-flash-preview"),
+                            providerOptions: {
+                                google: {
+                                    headers: {
+                                        "X-Data-Keywordsai-Params": encoded
+                                    }
+                                }
+                            },
                             prompt: queryPrompt,
                         });
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
@@ -498,10 +551,33 @@ export async function generateInterestsAction() {
                     </output_format>
                 `;
 
+                        // Keywords AI header for articles
+                        const keywordsAIHeaderContent = {
+                            "prompt": {
+                                "prompt_id": "9db6ef12ef564406b99d2f442d515e6c",
+                                "variables": {
+                                    "currentDateString": currentDateString,
+                                    "currentMonth": currentMonth,
+                                    "currentYear": currentYear.toString(),
+                                    "category": category,
+                                    "interest": interest,
+                                    "sourceArticles": JSON.stringify(sourceArticles)
+                                }
+                            }
+                        };
+                        const encoded = Buffer.from(JSON.stringify(keywordsAIHeaderContent)).toString('base64');
+
                         log(`Generating news cards from articles for interest: "${interest.split('.')[0]}"`);
                         const { text } = await generateText({
-                            model: google('gemini-3-flash-preview'),
-                            prompt
+                            model: keywordsAIGoogle("gemini-3-flash-preview"),
+                            providerOptions: {
+                                google: {
+                                    headers: {
+                                        "X-Data-Keywordsai-Params": encoded
+                                    }
+                                }
+                            },
+                            prompt: prompt,
                         });
 
 
