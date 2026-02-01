@@ -20,6 +20,15 @@ const keywordsAI = new KeywordsAITelemetry({
 });
 
 export async function generateInterestsAction() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    let userName: string | null = null;
+
+    if (user) {
+        const { data: profile } = await supabase.from('user_profiles').select('full_name').eq('user_id', user.id).single();
+        userName = profile?.full_name || null;
+    }
+
     const stream = createStreamableValue();
 
     (async () => {
@@ -36,14 +45,22 @@ export async function generateInterestsAction() {
         };
 
         try {
+<<<<<<< HEAD
             await keywordsAI.initialize();
             await keywordsAI.withWorkflow({ name: 'generate_interests_workflow' }, async () => {
                 // 1. Authenticate
                 const supabase = await createClient();
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) throw new Error('Not authenticated');
+=======
+            if (!user) throw new Error('Not authenticated');
+>>>>>>> 74fc6ab (made dynamic header)
 
             log(`Authenticated user: ${user.email || 'User'}`);
+
+            if (userName) {
+                stream.update({ type: 'user_info', data: { name: userName } });
+            }
 
             // 2. Fetch Data
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -228,7 +245,11 @@ export async function generateInterestsAction() {
             </constraints>
         `;
 
+<<<<<<< HEAD
                 log('Sending prompt to Gemini...');
+=======
+            log(`Sending prompt to Gemini with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, and ${twitterTimelineData.length} timeline tweets...`);
+>>>>>>> 74fc6ab (made dynamic header)
 
             // 4. Generate Text
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -569,5 +590,5 @@ export async function generateInterestsAction() {
         }
     })();
 
-    return { object: stream.value };
+    return { object: stream.value, userName };
 }

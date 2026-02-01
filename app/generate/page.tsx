@@ -80,6 +80,8 @@ export default function GeneratePage() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [events, setEvents] = useState<UIEvent[]>([]);
     const [result, setResult] = useState<GenerationResult | null>(null);
+    const [userName, setUserName] = useState<string | null>(null);
+    const [phase, setPhase] = useState<'initial' | 'researching' | 'generating'>('initial');
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll to bottom of events
@@ -121,26 +123,42 @@ export default function GeneratePage() {
         if (lower.includes('fetching')) return 'fetch';
         if (lower.includes('prompt') || lower.includes('generating interests')) return 'plan';
         if (lower.includes('searching') || lower.includes('found')) return 'search';
-        if (lower.includes('generating news') || lower.includes('cards')) return 'generate';
+        if (lower.includes('generating news') || lower.includes('cards') || lower.includes('drafting')) return 'generate';
         if (lower.includes('saving') || lower.includes('saved')) return 'save';
         if (lower.includes('error') || lower.includes('failed')) return 'error';
         return 'plan';
     };
 
     const handleGenerate = async () => {
-        setIsGenerating(true);
         setEvents([]);
         setResult(null);
-        addEvent('Starting generation process...', 'start');
+        setPhase('initial');
+        // Delay showing "Starting..." until we have the user name for the header
 
         try {
-            const { object } = await generateInterestsAction();
+            const { object, userName: initialName } = await generateInterestsAction();
+
+            if (initialName) {
+                setUserName(initialName);
+            }
+
+            setIsGenerating(true);
+            addEvent('Starting generation process...', 'start');
 
             for await (const partial of readStreamableValue(object)) {
                 if (partial) {
                     if (partial.type === 'log') {
                         const eventType = mapLogToEvent(partial.message);
                         addEvent(partial.message, eventType);
+
+                        // Update phases based on specific logs
+                        if (partial.message.includes('Received response from Gemini')) {
+                            setPhase('researching');
+                        } else if (partial.message.includes('Drafting article') || partial.message.includes('Generating news cards')) {
+                            setPhase('generating');
+                        }
+                    } else if (partial.type === 'user_info') {
+                        setUserName(partial.data.name);
                     } else if (partial.type === 'final_result') {
                         setResult(partial.data);
                         addEvent('Generation complete!', 'complete');
@@ -177,10 +195,12 @@ export default function GeneratePage() {
     return (
         <div className={`container mx-auto p-4 max-w-5xl flex flex-col gap-8 ${result ? 'min-h-screen' : 'h-screen overflow-hidden'}`}>
             <div className="space-y-2 text-center py-8 flex-shrink-0">
-                <h1 className="text-4xl font-serif font-bold tracking-tight">Personalized News Edition</h1>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Generate a custom newspaper based on your emails, calendar, and interests.
-                </p>
+                <h1 className="text-4xl font-serif font-bold tracking-tight min-h-[1.2em]">
+                    {phase === 'researching' && userName ? `Researching about ${userName}'s interests` :
+                        phase === 'generating' ? "Generating personalized news report" :
+                            userName ? `Learning more about ${userName}` :
+                                <span className="invisible">Loading...</span>}
+                </h1>
             </div>
 
             {/* Event Stream / Progress */}
