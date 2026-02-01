@@ -114,7 +114,14 @@ export async function generateInterestsAction() {
                             (Array.isArray(rawData) && rawData[0]?.id);
 
                         if (twitterId) {
-                            log(`Fetching liked tweets for user @${twitterUser.data.username || 'unknown'}...`);
+                            const twitterUsername =
+                                rawData.username ||
+                                rawData.data?.username ||
+                                rawData.data?.data?.username ||
+                                (Array.isArray(rawData) && rawData[0]?.username) ||
+                                'unknown';
+
+                            log(`Fetching liked tweets for user @${twitterUsername}`);
                             const tweets = await getLikedTweets(twitterId);
                             if (tweets.success) {
                                 // Handle nested structure: rawData.data.data is the array of tweets
@@ -130,7 +137,7 @@ export async function generateInterestsAction() {
                             }
 
                             // Fetch Home Timeline
-                            log(`Fetching home timeline for user @${twitterUser.data.username || 'unknown'}...`);
+                            log(`Fetching home timeline for user @${twitterUsername}`);
                             const timeline = await getHomeTimeline(twitterId);
                             if (timeline.success) {
                                 // Handle nested structure: rawData.data.data is the array of tweets
@@ -247,16 +254,30 @@ export async function generateInterestsAction() {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let interests: any = {};
                 try {
-                    log('LLM CALL: Generating interests from user data...');
                     const { text } = await generateText({
                         model: google('gemini-3-flash-preview'),
                         prompt: prompt,
                     });
-                    log('LLM CALL: Received response from Gemini.');
+                    log('Received list of interests from Gemini.');
 
                     // Try to parse JSON
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                     interests = JSON.parse(cleanResult);
+
+                    // Log the generated interests nicely
+                    let interestLog = "Generated Interests:\n";
+                    for (const category of ['personal', 'local', 'global']) {
+                        if (interests[category] && Array.isArray(interests[category])) {
+                            interestLog += `\n${category.charAt(0).toUpperCase() + category.slice(1)}:\n`;
+                            interests[category].forEach((interest: string) => {
+                                // Extract just the first sentence to keep it concise but descriptive
+                                const summary = interest.split('.')[0];
+                                interestLog += `- ${summary}...\n`;
+                            });
+                        }
+                    }
+                    log(interestLog);
+
                     stream.update({ type: 'interests', data: interests });
                 } catch (e) {
                     log(`Error generating/parsing interests: ${e}`);
@@ -341,12 +362,11 @@ export async function generateInterestsAction() {
                     - Queries should be distinct and non-overlapping
                     </constraints>
                 `;
-                        log('LLM CALL: Generating search queries for interest...');
                         const { text } = await generateText({
                             model: google('gemini-3-flash-preview'),
                             prompt: queryPrompt,
                         });
-                        log('LLM CALL: Search queries generated');
+                        log('Search queries generated');
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                         const parsed = JSON.parse(cleanResult);
                         if (Array.isArray(parsed)) {
@@ -364,7 +384,8 @@ export async function generateInterestsAction() {
 
                 const processInterest = async (category: string, interest: string) => {
                     try {
-                        log(`Generating search queries for ${category} interest: "${interest.substring(0, 30)}..."`);
+                        const interestSummary = interest.split('.')[0].substring(0, 40) + '...';
+                        log(`Generating search queries for ${category} interest: "${interestSummary}"`);
                         const queries = await generateQueriesForInterest(category, interest);
                         const articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[] = [];
 
@@ -405,7 +426,6 @@ export async function generateInterestsAction() {
                     articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[]
                 ) => {
                     try {
-                        log(`Generating news cards for ${category} interest: "${interest.substring(0, 30)}..."`);
                         const sourceArticles = articles.slice(0, 6).map((article) => ({
                             title: article.title,
                             url: article.url,
@@ -479,12 +499,12 @@ export async function generateInterestsAction() {
                     </output_format>
                 `;
 
-                        log('LLM CALL: Generating news cards from articles...');
+                        log(`Generating news cards from articles for interest: "${interest.split('.')[0].substring(0, 40)}..."`);
                         const { text } = await generateText({
                             model: google('gemini-3-flash-preview'),
                             prompt
                         });
-                        log('LLM CALL: News cards generated');
+
 
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                         const parsed = JSON.parse(cleanResult);
@@ -525,7 +545,14 @@ export async function generateInterestsAction() {
                             const enriched = await processInterest(category, interest);
                             enrichedInterests[category].push(enriched);
                             // Stream partial update if needed, or just logs
-                            stream.update({ type: 'log', message: `Found ${enriched.articles.length} articles for interest.` });
+                            const interestSummary = interest.split('.')[0].substring(0, 40) + '...';
+                            let foundMsg = `Found ${enriched.articles.length} articles for interest`;
+                            if (enriched.articles.length > 0) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                foundMsg += `: \n${enriched.articles.map((a: any) => `- ${a.title || 'Untitled'}`).join('\n')
+                                    } `;
+                            }
+                            log(foundMsg);
                         }
                     }
                 }
@@ -538,7 +565,8 @@ export async function generateInterestsAction() {
                             interest: item.interest,
                             articles: generatedArticles
                         });
-                        stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest.` });
+                        const interestSummary = item.interest.split('.')[0].substring(0, 40) + '...';
+                        stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest` });
                     }
                 }
 
@@ -565,19 +593,19 @@ export async function generateInterestsAction() {
                         });
 
                     if (error) {
-                        log(`Failed to save generated sections: ${error.message}`);
+                        log(`Failed to save generated sections: ${error.message} `);
                     } else {
                         log('Saved generated sections to Supabase.');
                     }
                 } catch (e) {
-                    log(`Error saving generated sections: ${e}`);
+                    log(`Error saving generated sections: ${e} `);
                 }
 
                 stream.update({ type: 'final_result', data: { interests, enrichedInterests, generatedSections } });
                 stream.done();
             });
         } catch (e) {
-            log(`Fatal error: ${e}`);
+            log(`Fatal error: ${e} `);
             stream.error(e);
         }
     })();

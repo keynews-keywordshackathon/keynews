@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { readStreamableValue } from '@ai-sdk/rsc';
 import {
-    Brain,
+    NotebookPen,
     Search,
     FileText,
     ListChecks,
@@ -15,7 +15,10 @@ import {
     CheckCircle2,
     XCircle,
     Loader2,
-    Newspaper
+    Newspaper,
+    Mail,
+    Calendar,
+    Twitter
 } from 'lucide-react';
 
 // --- Types ---
@@ -152,7 +155,7 @@ export default function GeneratePage() {
                         addEvent(partial.message, eventType);
 
                         // Update phases based on specific logs
-                        if (partial.message.includes('Received response from Gemini')) {
+                        if (partial.message.includes('Received list of interests from Gemini')) {
                             setPhase('researching');
                         } else if (partial.message.includes('Drafting article') || partial.message.includes('Generating news cards')) {
                             setPhase('generating');
@@ -224,7 +227,7 @@ export default function GeneratePage() {
                         {isGenerating && events.length === 0 && (
                             <Card className="p-4">
                                 <div className="flex items-center gap-3">
-                                    <Brain className="h-5 w-5 text-foreground animate-pulse flex-shrink-0" />
+                                    <NotebookPen className="h-5 w-5 text-foreground animate-pulse flex-shrink-0" />
                                     <span className="text-base font-medium bg-gradient-to-r from-foreground via-foreground/60 to-foreground bg-[length:200%_100%] animate-shimmer bg-clip-text text-transparent">
                                         Initializing...
                                     </span>
@@ -270,9 +273,15 @@ function EventCarouselCard({ event }: { event: UIEvent }) {
         if (event.type === 'error') return <XCircle className="h-5 w-5 text-destructive" />;
         if (event.type === 'complete') return <CheckCircle2 className="h-5 w-5 text-green-600" />;
         if (event.type === 'auth') return <ListChecks className="h-5 w-5" />;
-        if (event.type === 'fetch') return <Search className="h-5 w-5" />;
+        if (event.type === 'fetch') {
+            const lower = event.message.toLowerCase();
+            if (lower.includes('email')) return <Mail className="h-5 w-5" />;
+            if (lower.includes('twitter') || lower.includes('tweet')) return <Twitter className="h-5 w-5" />;
+            if (lower.includes('calendar') || lower.includes('event')) return <Calendar className="h-5 w-5" />;
+            return <Search className="h-5 w-5" />;
+        }
         if (event.type === 'search') return <Search className="h-5 w-5" />;
-        if (event.type === 'generate') return <Brain className="h-5 w-5" />;
+        if (event.type === 'generate') return <NotebookPen className="h-5 w-5" />;
         if (event.type === 'plan') return <Lightbulb className="h-5 w-5" />;
         return <FileText className="h-5 w-5" />;
     };
@@ -281,7 +290,13 @@ function EventCarouselCard({ event }: { event: UIEvent }) {
         switch (event.type) {
             case 'start': return 'Starting';
             case 'auth': return 'Authenticating';
-            case 'fetch': return 'Gathering Data';
+            case 'fetch': {
+                const lower = event.message.toLowerCase();
+                if (lower.includes('email')) return 'Fetching Emails';
+                if (lower.includes('twitter') || lower.includes('tweet')) return 'Fetching Twitter';
+                if (lower.includes('calendar') || lower.includes('event')) return 'Fetching Calendar';
+                return 'Gathering Data';
+            }
             case 'plan': return 'Analyzing & Planning';
             case 'search': return 'Researching Topics';
             case 'generate': return 'Writing Articles';
