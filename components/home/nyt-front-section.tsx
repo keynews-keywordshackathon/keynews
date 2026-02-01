@@ -23,6 +23,7 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import type { NytFrontSectionProps, NytArticle, OriginalArticle } from "@/lib/home/nyt-types";
+import { ArticleActions } from "@/components/home/article-actions";
 
 // Action link with hover card showing relevance details
 function ActionLink({ article }: { article: OriginalArticle }) {
@@ -117,6 +118,9 @@ export function NytFrontSection({
             {article.originalArticle && (
               <div className="mt-3">
                 <ActionLink article={article.originalArticle} />
+                <div className="mt-2">
+                  <ArticleActions article={article.originalArticle} />
+                </div>
               </div>
             )}
           </div>
@@ -165,6 +169,9 @@ export function NytFrontSection({
         {centerArticle.originalArticle && (
           <div className="mt-4">
             <ActionLink article={centerArticle.originalArticle} />
+            <div className="mt-2">
+              <ArticleActions article={centerArticle.originalArticle} />
+            </div>
           </div>
         )}
       </div>
@@ -214,6 +221,9 @@ export function NytFrontSection({
             {article.originalArticle && (
               <div className="mt-3">
                 <ActionLink article={article.originalArticle} />
+                <div className="mt-2">
+                  <ArticleActions article={article.originalArticle} />
+                </div>
               </div>
             )}
           </div>

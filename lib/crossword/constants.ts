@@ -4,7 +4,7 @@ export function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-export const CELL_SIZE = 32;
+export const CELL_SIZE = 56;
 
 export const NAVIGATION_KEYS = new Set([
   "ArrowUp",

@@ -23,6 +23,7 @@ import type { PuzzleData } from "@/lib/crossword/types";
 import { sections, weatherPanel, stockPanel } from "@/lib/home/sections";
 import type { Puzzle } from "@/lib/connections/types";
 import { NytFrontSection } from "@/components/home/nyt-front-section";
+import { ArticleActions } from "@/components/home/article-actions";
 import { WeatherPanel } from "@/components/home/weather-panel";
 import type { NytFrontSectionProps, NytArticle } from "@/lib/home/nyt-types";
 import { createClient } from "@/lib/supabase/client";
@@ -559,6 +560,9 @@ export default function Home() {
                               </div>
                             </div>
                           </div>
+                          <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                            <ArticleActions article={article} />
+                          </div>
                         </article>
                         );
                       })}
@@ -575,17 +579,14 @@ export default function Home() {
                   <p className="section-label text-muted-foreground">
                     Games
                   </p>
-                  <h3 className="headline-primary text-2xl text-foreground">Daily Crossword</h3>
-                  <p className="article-body font-serif">
-                    Keep focus sharp with a quick puzzle tailored to your brief.
-                  </p>
+                  <h3 className="headline-primary text-2xl text-foreground">Keep focus sharp with a quick puzzle tailored to your brief.</h3>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button size="sm" className="gap-2" onClick={() => setIsCrosswordOpen(true)}>
                     <Gamepad2 className="size-4" />
                     Open crossword
                   </Button>
-                  <Button size="sm" variant="ghost" className="gap-2" onClick={() => setIsConnectionsOpen(true)}>
+                  <Button size="sm" className="gap-2" onClick={() => setIsConnectionsOpen(true)}>
                     <Gamepad2 className="size-4" />
                     Open connections
                   </Button>
@@ -595,10 +596,10 @@ export default function Home() {
                 <div className="newspaper-border-thin p-4">
                   <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
                     <Gamepad2 className="size-4 text-muted-foreground" />
-                    Today&apos;s Game
+                    Daily Crossword
                   </p>
                   <p className="article-body font-serif mt-2 text-muted-foreground">
-                    15×15 grid with checks, reveals, and autosave.
+                    5×5 grid with checks, reveals, and autosave.
                   </p>
                   <div className="mt-3">
                     <Button

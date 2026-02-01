@@ -43,13 +43,13 @@ export const CrosswordCell = memo(function CrosswordCell({
       aria-label={`Row ${cell.row + 1}, Column ${cell.col + 1}${cell.value ? `, letter ${cell.value}` : ", empty"}`}
     >
       {cell.number && (
-        <span className="absolute top-0.5 left-0.5 text-[8px] leading-none font-medium text-foreground/70">
+        <span className="absolute top-1 left-1 text-[10px] leading-none font-medium text-foreground/70">
           {cell.number}
         </span>
       )}
       <span
         className={cn(
-          "text-sm font-semibold uppercase",
+          "text-2xl font-semibold uppercase",
           cell.status === "incorrect" && "text-[var(--crossword-incorrect)]",
           cell.status === "revealed" && "text-[var(--crossword-revealed)]",
           cell.status === "correct" && "text-[var(--crossword-correct)]",

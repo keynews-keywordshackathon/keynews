@@ -28,15 +28,15 @@ export async function fetchWeather(location: string) {
                 lon: -88.2073
             },
             current: {
-                temp: 32,
-                feels_like: 26,
-                humidity: 71,
-                weather: [{ description: "light snow" }]
+                temp: 9,
+                feels_like: 5,
+                humidity: 84,
+                weather: [{ description: "partly cloudy" }]
             },
             daily: [
-                { dt: now, temp: { day: 32 }, weather: [{ description: "light snow" }] },
-                { dt: now + 86400, temp: { day: 28 }, weather: [{ description: "snow" }] },
-                { dt: now + 172800, temp: { day: 35 }, weather: [{ description: "partly cloudy" }] }
+                { dt: now, temp: { day: 24 }, weather: [{ description: "partly cloudy" }] },
+                { dt: now + 86400, temp: { day: 31 }, weather: [{ description: "partly cloudy" }] },
+                { dt: now + 172800, temp: { day: 28 }, weather: [{ description: "partly cloudy" }] }
             ]
         },
         location: "Urbana"

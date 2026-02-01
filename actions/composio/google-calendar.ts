@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { generateText } from 'ai'
 import { getComposioClient } from './shared'
 
 // ============================================================================
@@ -217,6 +219,127 @@ export async function createCalendarEvent(eventDetails: {
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to create calendar event'
+        }
+    }
+}
+
+// ============================================================================
+// Calendar Event Creation from Article
+// ============================================================================
+
+interface ArticleForCalendar {
+    title: string
+    summary: string
+    relevance: string
+    actionReason: string
+    action: { label: string; cta: string; href: string }
+}
+
+/**
+ * Create a Google Calendar event based on an article's action.
+ * Uses Gemini to determine event details, then Composio GOOGLECALENDAR_CREATE_EVENT.
+ * @param article The article data to generate a calendar event from
+ * @returns Object containing success status and event info
+ */
+export async function createArticleCalendarEvent(article: ArticleForCalendar) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'User not authenticated' }
+    }
+
+    const entityId = user.id
+    const composio = getComposioClient()
+    const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY })
+
+    try {
+        const now = new Date().toISOString()
+
+        // Step 1: Generate event details with Gemini
+        const prompt = `Based on the following news article and its suggested action, generate a Google Calendar event that helps the reader act on this story.
+
+Article Title: ${article.title}
+Summary: ${article.summary}
+Why it matters: ${article.relevance}
+Suggested action: ${article.action.label}
+Why act now: ${article.actionReason}
+Relevant link: ${article.action.href}
+
+Current date/time (UTC): ${now}
+
+Write a JSON response with:
+- "summary": a concise event title (e.g. "RSVP for UIUC Career Fair", "Submit transit feedback")
+- "description": 2-3 sentence description including the relevant link and why this matters
+- "start_datetime": an RFC 3339 UTC datetime string for when the user should do this (pick a reasonable upcoming time, e.g. tomorrow morning or later this week)
+- "end_datetime": an RFC 3339 UTC datetime string for the end (30-60 min after start)
+- "event_duration_minutes": duration in minutes
+
+The event should be a realistic reminder/block for the user to take the suggested action.
+Respond with valid JSON only, no markdown fences.`
+
+        const { text: generated } = await generateText({
+            model: google('gemini-3-flash-preview'),
+            system: 'You create calendar events from news articles to help users take action. Always respond with valid JSON only.',
+            prompt,
+        })
+
+        if (!generated) {
+            return { success: false, error: 'Failed to generate event details' }
+        }
+
+        const eventDetails = JSON.parse(generated)
+
+        // Step 2: Create calendar event via Composio
+        const tools = await composio.tools.get(entityId, {
+            tools: ['GOOGLECALENDAR_CREATE_EVENT'],
+        })
+
+        if (!tools || tools.length === 0) {
+            return { success: false, error: 'Calendar tool not available. Please connect your Google Calendar.' }
+        }
+
+        const mockToolCall = {
+            id: `call_event_${Date.now()}`,
+            type: 'function',
+            function: {
+                name: 'GOOGLECALENDAR_CREATE_EVENT',
+                arguments: JSON.stringify({
+                    summary: eventDetails.summary,
+                    description: eventDetails.description,
+                    start_datetime: eventDetails.start_datetime,
+                    event_duration_minutes: eventDetails.event_duration_minutes || 30,
+                    calendar_id: 'primary',
+                    send_updates: false,
+                    visibility: 'default',
+                    eventType: 'default',
+                }),
+            },
+        }
+
+        const mockResponse = {
+            choices: [{
+                message: {
+                    tool_calls: [mockToolCall],
+                },
+            }],
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
+
+        console.log('[Composio] Calendar event creation result:', JSON.stringify(result, null, 2))
+
+        return {
+            success: true,
+            summary: eventDetails.summary,
+            start: eventDetails.start_datetime,
+        }
+    } catch (error) {
+        console.error('Error creating calendar event from article:', error)
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to create calendar event',
         }
     }
 }

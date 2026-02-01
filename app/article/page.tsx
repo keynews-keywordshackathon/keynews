@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { useState } from "react";
+import { ArticleActions } from "@/components/home/article-actions";
 
 type ArticleImage = { label: string; tint: string; src?: string };
 type ArticleSource = { label: string; href: string };
@@ -168,6 +169,10 @@ export default function ArticlePage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <ArticleActions article={article} />
             </div>
           </div>
         </article>

@@ -7,6 +7,7 @@ export {
     startGmailAuth,
     fetchEmails,
     analyzeEmailsWithAI,
+    createArticleEmailDraft,
 } from './gmail'
 
 // Google Calendar actions
@@ -14,6 +15,7 @@ export {
     startCalendarAuth,
     fetchCalendarEvents,
     createCalendarEvent,
+    createArticleCalendarEvent,
 } from './google-calendar'
 
 // YouTube actions

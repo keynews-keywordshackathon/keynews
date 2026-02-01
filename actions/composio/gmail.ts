@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { generateText } from 'ai'
 import { getComposioClient, getOpenAIClient } from './shared'
 
 // ============================================================================
@@ -284,6 +286,112 @@ Respond in JSON format matching this structure:
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Failed to analyze emails'
+        }
+    }
+}
+
+// ============================================================================
+// Gmail Draft Creation from Article
+// ============================================================================
+
+interface ArticleForEmail {
+    title: string
+    summary: string
+    relevance: string
+    actionReason: string
+    action: { label: string; cta: string; href: string }
+    sources: { label: string; href: string }[]
+}
+
+/**
+ * Create a Gmail draft email based on an article's action.
+ * Uses Gemini to generate the email content, then Composio GMAIL_CREATE_EMAIL_DRAFT.
+ * @param article The article data to generate an email from
+ * @returns Object containing success status and draft info
+ */
+export async function createArticleEmailDraft(article: ArticleForEmail) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'User not authenticated' }
+    }
+
+    const entityId = user.id
+    const composio = getComposioClient()
+    const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY })
+
+    try {
+        // Step 1: Generate email content with Gemini
+        const prompt = `Based on the following news article and its suggested action, write a short, professional email draft that the reader could send to act on this story.
+
+Article Title: ${article.title}
+Summary: ${article.summary}
+Why it matters: ${article.relevance}
+Suggested action: ${article.action.label}
+Why act now: ${article.actionReason}
+Relevant link: ${article.action.href}
+
+Write a JSON response with:
+- "subject": a concise email subject line
+- "body": the email body (plain text, 3-5 sentences, professional but friendly, include the relevant link naturally)
+
+Do NOT include a "To" field — the user will fill that in. The email should read as if the user is reaching out to take the suggested action (e.g. RSVP, submit feedback, invite a teammate, register, etc).
+Respond with valid JSON only, no markdown fences.`
+
+        const { text: generated } = await generateText({
+            model: google('gemini-3-flash-preview'),
+            system: 'You write concise, actionable emails based on news articles. Always respond with valid JSON only.',
+            prompt,
+        })
+
+        if (!generated) {
+            return { success: false, error: 'Failed to generate email content' }
+        }
+
+        const { subject, body } = JSON.parse(generated)
+
+        // Step 2: Create Gmail draft via Composio
+        const tools = await composio.tools.get(entityId, {
+            tools: ['GMAIL_CREATE_EMAIL_DRAFT'],
+        })
+
+        if (!tools || tools.length === 0) {
+            return { success: false, error: 'Gmail draft tool not available. Please connect your Gmail account.' }
+        }
+
+        const mockToolCall = {
+            id: `call_draft_${Date.now()}`,
+            type: 'function',
+            function: {
+                name: 'GMAIL_CREATE_EMAIL_DRAFT',
+                arguments: JSON.stringify({
+                    subject,
+                    body,
+                    is_html: false,
+                }),
+            },
+        }
+
+        const mockResponse = {
+            choices: [{
+                message: {
+                    tool_calls: [mockToolCall],
+                },
+            }],
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
+
+        console.log('[Composio] Draft creation result:', JSON.stringify(result, null, 2))
+
+        return { success: true, subject, body }
+    } catch (error) {
+        console.error('Error creating email draft:', error)
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to create email draft',
         }
     }
 }
