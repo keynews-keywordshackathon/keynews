@@ -366,7 +366,6 @@ export async function generateInterestsAction() {
                             model: google('gemini-3-flash-preview'),
                             prompt: queryPrompt,
                         });
-                        log('Search queries generated');
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                         const parsed = JSON.parse(cleanResult);
                         if (Array.isArray(parsed)) {
