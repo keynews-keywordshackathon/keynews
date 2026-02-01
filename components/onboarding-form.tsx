@@ -17,22 +17,56 @@ import { startGmailAuth, startCalendarAuth, startYouTubeAuth, startTwitterAuth, 
 import { saveOnboardingData } from '@/actions/onboarding'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
+import { 
+    Calendar, Twitter, Mail, Youtube, Newspaper,
+    Monitor, Bot, Trophy, Landmark, Film, Briefcase, 
+    FlaskConical, Heart, Plane, Pill, UtensilsCrossed, 
+    Leaf, Palette, GraduationCap, Gamepad2
+} from 'lucide-react'
+
+const INTEGRATIONS = [
+    { 
+        id: 'Google Calendar', 
+        name: 'Google Calendar', 
+        description: 'Events, schedules, and appointments',
+        icon: Calendar 
+    },
+    { 
+        id: 'X', 
+        name: 'X (Twitter)', 
+        description: 'Tweets, likes, and timeline',
+        icon: Twitter 
+    },
+    { 
+        id: 'Gmail', 
+        name: 'Gmail', 
+        description: 'Emails and newsletters',
+        icon: Mail 
+    },
+    { 
+        id: 'YouTube', 
+        name: 'YouTube', 
+        description: 'Subscriptions and watch history',
+        icon: Youtube 
+    },
+]
+
 const INTERESTS = [
-    { id: 'tech', label: 'Technology', emoji: '💻' },
-    { id: 'ai', label: 'AI', emoji: '🤖' },
-    { id: 'sports', label: 'Sports', emoji: '⚽' },
-    { id: 'politics', label: 'Politics', emoji: '🗳️' },
-    { id: 'entertainment', label: 'Entertainment', emoji: '🎬' },
-    { id: 'business', label: 'Business', emoji: '💼' },
-    { id: 'science', label: 'Science', emoji: '🔬' },
-    { id: 'health', label: 'Health', emoji: '🏥' },
-    { id: 'travel', label: 'Travel', emoji: '✈️' },
-    { id: 'medicine', label: 'Medicine', emoji: '💊' },
-    { id: 'food', label: 'Food', emoji: '🍔' },
-    { id: 'climate', label: 'Climate', emoji: '🌍' },
-    { id: 'art', label: 'Art', emoji: '🎨' },
-    { id: 'education', label: 'Education', emoji: '📚' },
-    { id: 'gaming', label: 'Gaming', emoji: '🎮' },
+    { id: 'tech', label: 'Technology', icon: Monitor },
+    { id: 'ai', label: 'AI', icon: Bot },
+    { id: 'sports', label: 'Sports', icon: Trophy },
+    { id: 'politics', label: 'Politics', icon: Landmark },
+    { id: 'entertainment', label: 'Entertainment', icon: Film },
+    { id: 'business', label: 'Business', icon: Briefcase },
+    { id: 'science', label: 'Science', icon: FlaskConical },
+    { id: 'health', label: 'Health', icon: Heart },
+    { id: 'travel', label: 'Travel', icon: Plane },
+    { id: 'medicine', label: 'Medicine', icon: Pill },
+    { id: 'food', label: 'Food', icon: UtensilsCrossed },
+    { id: 'climate', label: 'Climate', icon: Leaf },
+    { id: 'art', label: 'Art', icon: Palette },
+    { id: 'education', label: 'Education', icon: GraduationCap },
+    { id: 'gaming', label: 'Gaming', icon: Gamepad2 },
 ]
 
 export function OnboardingForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -43,7 +77,6 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
     const [fullName, setFullName] = useState('')
     const [location, setLocation] = useState('')
-    const [isSaving, setIsSaving] = useState(false)
     const displayStep = connectedAccountId ? 3 : step
 
     useEffect(() => {
@@ -116,28 +149,15 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
 
 
 
-    const handleNext = async () => {
+    const handleNext = () => {
         if (!connectedAccountId && step === 2) {
-            // Save interests data before moving to account connections
-            setIsSaving(true)
-            try {
-                const result = await saveOnboardingData({
-                    fullName,
-                    location,
-                    interests: selectedInterests
-                })
-
-                if (result.success) {
-                    setStep(step + 1)
-                } else {
-                    console.error('Failed to save onboarding data:', result.error)
-                    // Optionally handle error UI here
-                }
-            } catch (error) {
-                console.error('Error in handleNext:', error)
-            } finally {
-                setIsSaving(false)
-            }
+            // Save interests data in background while moving to account connections
+            saveOnboardingData({
+                fullName,
+                location,
+                interests: selectedInterests
+            }).catch((error) => console.error('Error saving onboarding data:', error))
+            setStep(step + 1)
         } else if (!connectedAccountId && step < totalSteps) {
             setStep(step + 1)
         }
@@ -199,68 +219,33 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
 
     return (
         <div className={cn('flex flex-col gap-6', className)} {...props}>
-            <Card className="mx-auto flex flex-col" style={{ width: 700, height: 700 }}>
+            <Card className="mx-auto flex flex-col" style={{ width: 700, height: 600 }}>
                 <CardHeader className="gap-4">
                     <div className="flex items-center justify-between">
                         <CardTitle>
-                            {displayStep === 1 && "Discover Your Personalized News"}
-                            {displayStep === 2 && "What Topics Interest You?"}
-                            {displayStep === 3 && "Connect to Enhance Your Experience"}
+                            {displayStep === 1 && "Welcome to The Keywords Times"}
+                            {displayStep === 2 && "What Interests You?"}
+                            {displayStep === 3 && "Connect your world"}
                         </CardTitle>
                         <span className="text-sm text-muted-foreground">
                             Step {displayStep} of {totalSteps}
                         </span>
                     </div>
                     <Progress value={progress} className="h-2" />
-                    <CardDescription>
-                        {displayStep === 1 && "Welcome to Keynews - Your AI-powered personalized news experience"}
-                        {displayStep === 2 && "Select the topics that matter most to you"}
-                        {displayStep === 3 && "Connect your accounts to personalize your feed"}
-                    </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-auto">
                     <form onSubmit={handleSubmit} id="onboarding-form">
                         {displayStep === 1 && (
-                            <div className="grid gap-6">
-                                <div className="space-y-4">
-                                    <h3 className="text-xl font-semibold">Welcome to Keynews</h3>
-                                    <p className="text-muted-foreground">
-                                        Keynews is your personalized AI-powered news platform that delivers 
-                                        intelligent, contextual news tailored specifically to you. We combine 
-                                        signals from your calendar, inbox, subscriptions, and interests to 
-                                        create a unique daily brief that matters to you.
-                                    </p>
-                                    <div className="space-y-3">
-                                        <div className="flex items-start gap-3">
-                                            <span className="text-2xl">📰</span>
-                                            <div>
-                                                <p className="font-medium">Personalized Articles</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    News curated based on your interests, location, and activity
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-start gap-3">
-                                            <span className="text-2xl">🎯</span>
-                                            <div>
-                                                <p className="font-medium">Actionable Insights</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Each story includes why it matters and what you can do about it
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-start gap-3">
-                                            <span className="text-2xl">🔗</span>
-                                            <div>
-                                                <p className="font-medium">Smart Integrations</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Connect your accounts to enhance personalization and context
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div className="flex flex-col items-center justify-center gap-5 py-4">
+                                <div className="size-16 rounded-full bg-[#f5f5f4] flex items-center justify-center">
+                                    <Newspaper className="size-8" strokeWidth={1.5} />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
+                                <h3 className="text-2xl font-bold text-center">News That Knows You</h3>
+                                <p className="text-muted-foreground text-center max-w-md">
+                                    We analyze your interests, connect to your digital life, 
+                                    and create a personalized newspaper written for you. 
+                                </p>
+                                <div className="grid grid-cols-2 gap-4 w-full mt-10">
                                     <div className="grid gap-2">
                                         <Label htmlFor="fullName">Full Name</Label>
                                         <Input
@@ -288,7 +273,6 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                         {displayStep === 2 && (
                             <div className="grid gap-6">
                                 <div className="space-y-2">
-                                    <Label className="text-base">Select your interests</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Choose the topics you'd like to see in your personalized feed
                                     </p>
@@ -298,11 +282,19 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                         <Button
                                             key={interest.id}
                                             type="button"
-                                            variant={selectedInterests.includes(interest.id) ? 'default' : 'outline'}
+                                            variant="outline"
                                             onClick={() => toggleInterest(interest.id)}
-                                            className="w-full h-auto py-6 px-4 flex flex-row items-center justify-center gap-4"
+                                            className={cn(
+                                                "group w-full h-auto py-4 px-4 flex flex-row items-center justify-start gap-3 border-[1.5px] hover:border-black",
+                                                selectedInterests.includes(interest.id) && "bg-[#edecea] border-black hover:bg-[#edecea]"
+                                            )}
                                         >
-                                            <span className="text-xl">{interest.emoji}</span>
+                                            <div className={cn(
+                                                "size-8 shrink-0 rounded-full bg-[#f5f5f4] flex items-center justify-center transition-colors",
+                                                selectedInterests.includes(interest.id) ? "bg-[#e8e8e6] group-hover:bg-[#e8e8e6]" : "group-hover:bg-[#e8e8e6]"
+                                            )}>
+                                                <interest.icon className="size-4" strokeWidth={1.5} />
+                                            </div>
                                             <span className="text-sm">{interest.label}</span>
                                         </Button>
                                     ))}
@@ -313,21 +305,26 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                         {displayStep === 3 && (
                             <div className="grid gap-4">
                                 <div className="space-y-2">
-                                    <Label className="text-base">Connect your accounts</Label>
                                     <p className="text-sm text-muted-foreground">
                                         Link your accounts to enhance personalization and get more relevant content
                                     </p>
                                 </div>
-                                <div className="grid grid-cols-1 gap-4">
-                                    {['Google Calendar', 'X', 'Gmail', 'YouTube'].map((platform) => (
+                                <div className="grid grid-cols-1 gap-3">
+                                    {INTEGRATIONS.map((integration) => (
                                         <Button
-                                            key={platform}
+                                            key={integration.id}
                                             type="button"
                                             variant="outline"
-                                            onClick={() => handleIntegrationClick(platform)}
-                                            className="w-full h-24 flex flex-row items-center justify-center gap-2 text-xl font-medium"
+                                            onClick={() => handleIntegrationClick(integration.id)}
+                                            className="group w-full h-auto py-4 px-4 flex flex-row items-center justify-start gap-4 border-[1.5px] hover:border-black"
                                         >
-                                            {platform}
+                                            <div className="size-10 shrink-0 rounded-full bg-[#f5f5f4] group-hover:bg-[#e8e8e6] flex items-center justify-center transition-colors">
+                                                <integration.icon className="size-5" strokeWidth={1.5} />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="font-medium">{integration.name}</p>
+                                                <p className="text-sm text-muted-foreground font-normal">{integration.description}</p>
+                                            </div>
                                         </Button>
                                     ))}
                                 </div>
@@ -344,8 +341,8 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                         Back
                     </Button>
                     {displayStep < totalSteps ? (
-                        <Button onClick={handleNext} disabled={isSaving}>
-                            {isSaving ? 'Saving...' : 'Next'}
+                        <Button onClick={handleNext}>
+                            Next
                         </Button>
                     ) : (
                         <Button type="submit" form="onboarding-form">
