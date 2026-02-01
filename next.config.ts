@@ -7,6 +7,15 @@ const nextConfig: NextConfig = {
     // Ensure @composio/core is only used on the server (uses node:crypto)
     serverExternalPackages: ['@composio/core'],
     turbopack: {},
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "media.licdn.com",
+                pathname: "/**",
+            },
+        ],
+    },
     webpack: (config) => {
         config.resolve.modules = [
             path.join(projectRoot, "node_modules"),

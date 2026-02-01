@@ -37,7 +37,7 @@ type GeneratedArticle = {
     summary: string;
     relevance: string;
     actionReason: string;
-    images?: { label: string; tint: string }[];
+    images?: { label: string; tint: string; src?: string }[];
     sources?: { label: string; href: string }[];
     action?: { label?: string; cta?: string; href?: string };
 };

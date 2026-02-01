@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Sparkles,
 } from "lucide-react";
+import { useState } from "react";
 import { sections, weatherPanel, stockPanel } from "@/lib/home/sections";
 
 const getPreviewText = (text: string, sentenceCount = 2) => {
@@ -23,6 +24,18 @@ const sectionIconMap = {
 };
 
 export function HomePreview() {
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  const markImageFailed = (src?: string) => {
+    if (!src) return;
+    setFailedImages((prev) => {
+      if (prev.has(src)) return prev;
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  };
+
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none paper-texture text-foreground">
       <header className="relative z-10 border-b border-foreground/20 bg-transparent">
@@ -112,27 +125,40 @@ export function HomePreview() {
                     </div>
 
                     <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-2 lg:divide-y-0">
-                      {section.articles.slice(0, 2).map((article) => (
-                        <article
-                          key={article.title}
-                          className="group py-4 transition lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
-                        >
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                              {article.images.map((image) => (
-                                <div
-                                  key={`${article.title}-${image.label}`}
-                                  className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${
-                                    article.images.length === 1 ? "col-span-2" : ""
-                                  }`}
-                                >
-                                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-                                  <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
-                                    {image.label}
+                      {section.articles.slice(0, 2).map((article) => {
+                        const visibleImages = article.images.filter(
+                          (image) => image.src && !failedImages.has(image.src)
+                        );
+
+                        return (
+                          <article
+                            key={article.title}
+                            className="group py-4 transition lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
+                          >
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                {visibleImages.map((image) => (
+                                  <div
+                                    key={`${article.title}-${image.label}`}
+                                    className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${
+                                      visibleImages.length === 1 ? "col-span-2" : ""
+                                    }`}
+                                  >
+                                    {image.src && (
+                                      <img
+                                        src={image.src}
+                                        alt={image.label}
+                                        className="absolute inset-0 h-full w-full object-cover"
+                                        onError={() => markImageFailed(image.src)}
+                                      />
+                                    )}
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+                                    <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
+                                      {image.label}
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
                             <div className="space-y-2">
                               <h4 className="headline-secondary text-lg text-foreground">{article.title}</h4>
                               <div className="relative">
@@ -170,7 +196,8 @@ export function HomePreview() {
                             </div>
                           </div>
                         </article>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );

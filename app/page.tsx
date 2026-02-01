@@ -55,8 +55,8 @@ const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectio
     blurb: getPreviewText(centerArticle.summary, 3),
     image: centerArticle.images?.[0]
       ? {
-          src: "",
-          alt: centerArticle.images[0].label,
+          src: centerArticle.images[0].src ?? "",
+          alt: centerArticle.images[0].label || centerArticle.title,
           label: centerArticle.images[0].label,
           tint: centerArticle.images[0].tint,
         }
@@ -70,8 +70,8 @@ const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectio
     blurb: getPreviewText(article.summary, 2),
     image: article.images?.[0]
       ? {
-          src: "",
-          alt: article.images[0].label,
+          src: article.images[0].src ?? "",
+          alt: article.images[0].label || article.title,
           label: article.images[0].label,
           tint: article.images[0].tint,
         }
@@ -108,6 +108,21 @@ export default function Home() {
   const [isConnectionsOpen, setIsConnectionsOpen] = useState(false);
   const [connectionsPuzzle, setConnectionsPuzzle] = useState<Puzzle | null>(null);
   const [homeSections, setHomeSections] = useState<Section[]>(sections);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  const markImageFailed = (src?: string) => {
+    if (!src) return;
+    setFailedImages((prev) => {
+      if (prev.has(src)) return prev;
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  };
+
+  const activeArticleImages = activeArticle
+    ? activeArticle.images.filter((image) => image.src && !failedImages.has(image.src))
+    : [];
 
   useEffect(() => {
     if (!activeArticle && !isCrosswordOpen && !isConnectionsOpen) {
@@ -266,12 +281,20 @@ export default function Home() {
               <div className="max-h-[80vh] overflow-y-auto px-8 py-8 custom-scrollbar">
                 <div className="space-y-10">
                   <div className="grid grid-cols-2 gap-4">
-                    {activeArticle.images.map((image) => (
+                    {activeArticleImages.map((image) => (
                       <div
                         key={`${activeArticle.title}-${image.label}`}
-                        className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${activeArticle.images.length === 1 ? "col-span-2" : ""
+                        className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${activeArticleImages.length === 1 ? "col-span-2" : ""
                           }`}
                       >
+                        {image.src && (
+                          <img
+                            src={image.src}
+                            alt={image.label || activeArticle.title}
+                            className="absolute inset-0 h-full w-full object-cover"
+                            onError={() => markImageFailed(image.src)}
+                          />
+                        )}
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
                         <div className="relative z-10 flex h-full items-end p-4 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
                           {image.label}
@@ -504,27 +527,40 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-2 lg:divide-y-0">
-                      {section.articles.map((article) => (
-                        <article
-                          key={article.title}
-                          onClick={() => setActiveArticle(article)}
-                          className="group cursor-pointer py-4 transition lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
-                        >
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                              {article.images.map((image) => (
-                                <div
-                                  key={`${article.title}-${image.label}`}
-                                  className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${article.images.length === 1 ? "col-span-2" : ""
-                                    }`}
-                                >
-                                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-                                  <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
-                                    {image.label}
+                      {section.articles.map((article) => {
+                        const visibleImages = article.images.filter(
+                          (image) => image.src && !failedImages.has(image.src)
+                        );
+
+                        return (
+                          <article
+                            key={article.title}
+                            onClick={() => setActiveArticle(article)}
+                            className="group cursor-pointer py-4 transition lg:border-b lg:border-border lg:p-4 lg:odd:border-r lg:[&:nth-last-child(-n+2)]:border-b-0"
+                          >
+                            <div className="space-y-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                {visibleImages.map((image) => (
+                                  <div
+                                    key={`${article.title}-${image.label}`}
+                                    className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${visibleImages.length === 1 ? "col-span-2" : ""
+                                      }`}
+                                  >
+                                    {image.src && (
+                                      <img
+                                        src={image.src}
+                                        alt={image.label || article.title}
+                                        className="absolute inset-0 h-full w-full object-cover"
+                                        onError={() => markImageFailed(image.src)}
+                                      />
+                                    )}
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+                                    <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
+                                      {image.label}
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
                             <div className="space-y-2">
                               <h4 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">{article.title}</h4>
                               <div className="relative">
@@ -602,7 +638,8 @@ export default function Home() {
                             </div>
                           </div>
                         </article>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );

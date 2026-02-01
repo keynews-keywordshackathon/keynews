@@ -21,6 +21,7 @@
 
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { useState } from "react";
 import type { NytFrontSectionProps, NytArticle, OriginalArticle } from "@/lib/home/nyt-types";
 
 // Action link with hover card showing relevance details
@@ -73,6 +74,18 @@ export function NytFrontSection({
   bottomArticles,
   onArticleClick,
 }: NytFrontSectionProps) {
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  const markImageFailed = (src?: string) => {
+    if (!src) return;
+    setFailedImages((prev) => {
+      if (prev.has(src)) return prev;
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  };
+
   const handleClick = (article: NytArticle) => {
     if (article.originalArticle && onArticleClick) {
       onArticleClick(article.originalArticle);
@@ -116,12 +129,18 @@ export function NytFrontSection({
           className="group cursor-pointer"
           onClick={() => handleClick(centerArticle)}
         >
-          {centerArticle.image && (
+          {centerArticle.image?.src && !failedImages.has(centerArticle.image.src) && (
             <div
               className={`relative h-64 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
                 centerArticle.image.tint || "from-zinc-500/20 via-white/90 to-white"
               }`}
             >
+              <img
+                src={centerArticle.image.src}
+                alt={centerArticle.image.alt || centerArticle.title}
+                className="absolute inset-0 h-full w-full object-cover"
+                onError={() => markImageFailed(centerArticle.image?.src)}
+              />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
               {centerArticle.image.label && (
                 <div className="caption relative z-10 flex h-full items-end p-3 uppercase tracking-[0.22em] text-muted-foreground">
@@ -159,12 +178,18 @@ export function NytFrontSection({
               className="group cursor-pointer"
               onClick={() => handleClick(article)}
             >
-              {article.image && (
+              {article.image?.src && !failedImages.has(article.image.src) && (
                 <div
                   className={`relative h-40 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
                     article.image.tint || "from-zinc-500/20 via-white/90 to-white"
                   }`}
                 >
+                  <img
+                    src={article.image.src}
+                    alt={article.image.alt || article.title}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    onError={() => markImageFailed(article.image?.src)}
+                  />
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
                   {article.image.label && (
                     <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">

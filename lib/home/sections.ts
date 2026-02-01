@@ -1,4 +1,24 @@
-export const sections = [
+type ArticleImage = { label: string; tint: string; src?: string };
+type ArticleSource = { label: string; href: string };
+type ArticleAction = { label: string; cta: string; href: string };
+type Article = {
+  title: string;
+  summary: string;
+  relevance: string;
+  actionReason: string;
+  images: ArticleImage[];
+  sources: ArticleSource[];
+  action: ArticleAction;
+};
+type Section = {
+  id: string;
+  title: string;
+  subtitle: string;
+  accent: string;
+  articles: Article[];
+};
+
+export const sections: Section[] = [
   {
     id: "personal",
     title: "Personal",

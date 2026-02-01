@@ -298,7 +298,7 @@ export async function generateInterestsAction() {
                 try {
                     log(`Generating search queries for ${category} interest: "${interest.substring(0, 30)}..."`);
                     const queries = await generateQueriesForInterest(category, interest);
-                    const articles: { title: string | null, url: string, text: string | null, query: string }[] = [];
+                    const articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[] = [];
 
                     for (const query of queries) {
                         log(`Searching news for query: "${query.substring(0, 40)}..."`);
@@ -314,7 +314,8 @@ export async function generateInterestsAction() {
                                 title: r.title ?? null,
                                 url: r.url,
                                 text: r.text ?? null,
-                                query
+                                query,
+                                imageUrl: (r as { image?: string | null }).image ?? null
                             });
                         }
                     }
@@ -333,7 +334,7 @@ export async function generateInterestsAction() {
             const generateArticlesForInterest = async (
                 category: string,
                 interest: string,
-                articles: { title: string | null, url: string, text: string | null, query: string }[]
+                articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[]
             ) => {
                 try {
                     log(`Generating news cards for ${category} interest: "${interest.substring(0, 30)}..."`);
@@ -341,7 +342,8 @@ export async function generateInterestsAction() {
                         title: article.title,
                         url: article.url,
                         text: article.text ? article.text.slice(0, 600) : null,
-                        query: article.query
+                        query: article.query,
+                        imageUrl: article.imageUrl ?? null
                     }));
 
                     const prompt = `
@@ -370,7 +372,8 @@ export async function generateInterestsAction() {
                     - Use source URLs in the sources list and action hrefs
                     - Include at least 2 sources per article
                     - Keep summaries grounded in source_articles content
-                    - Use 2 image entries per article
+                    - Use 1 to 2 image entries per article
+                    - Each image entry must include a valid image URL from source_articles imageUrl when available
                     </requirements>
 
                     <image_tints>
@@ -385,8 +388,8 @@ export async function generateInterestsAction() {
                         "relevance": "string",
                         "actionReason": "string",
                         "images": [
-                          { "label": "string", "tint": "string" },
-                          { "label": "string", "tint": "string" }
+                          { "label": "string", "tint": "string", "src": "string" },
+                          { "label": "string", "tint": "string", "src": "string" }
                         ],
                         "sources": [
                           { "label": "string", "href": "string" }
@@ -409,7 +412,27 @@ export async function generateInterestsAction() {
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                     const parsed = JSON.parse(cleanResult);
                     if (Array.isArray(parsed)) {
-                        return parsed;
+                        const imageUrls = sourceArticles
+                            .map((article) => article.imageUrl)
+                            .filter((url): url is string => typeof url === 'string' && url.length > 0);
+                        return parsed.map((article) => {
+                            if (!article) return article;
+                            const fallbackTint = 'from-zinc-500/20 via-white/90 to-white';
+                            const rawImages = Array.isArray(article.images) ? article.images : [];
+                            const updatedImages = rawImages.map((image: { src?: string }, index: number) => ({
+                                ...image,
+                                src: image.src || imageUrls[index] || imageUrls[0] || ''
+                            }));
+                            const finalImages = updatedImages.length > 0
+                                ? updatedImages
+                                : imageUrls[0]
+                                    ? [{ label: article.title || 'Image', tint: fallbackTint, src: imageUrls[0] }]
+                                    : [];
+                            return {
+                                ...article,
+                                images: finalImages
+                            };
+                        });
                     }
                     return [];
                 } catch (e) {
