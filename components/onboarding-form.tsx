@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
     Card,
@@ -13,11 +13,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { startGmailAuth, startCalendarAuth, startYouTubeAuth, fetchEmails, fetchCalendarEvents, fetchYouTubeData } from '@/actions/composio'
+import { startGmailAuth, startCalendarAuth, startYouTubeAuth, startTwitterAuth, fetchEmails, fetchCalendarEvents, fetchYouTubeData, getTwitterUser, getLikedTweets, getHomeTimeline } from '@/actions/composio'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
-
 const INTERESTS = [
     { id: 'tech', label: 'Technology', emoji: '💻' },
     { id: 'ai', label: 'AI', emoji: '🤖' },
@@ -64,6 +62,38 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                 } catch (error) {
                     console.error('Failed to fetch after OAuth:', error)
                 }
+
+                // 2. Fetch Twitter Data
+                try {
+                    console.log('Attempting to fetch Twitter user...')
+                    const userResult = await getTwitterUser()
+                    console.log('Twitter User Result:', userResult)
+
+                    if (userResult.success && userResult.data) {
+                        // The structure can be deeply nested: data.data.data.id
+                        const twitterUserId =
+                            userResult.data.id ||
+                            userResult.data.data?.id ||
+                            userResult.data.data?.data?.id
+                        if (twitterUserId) {
+                            console.log('Got Twitter ID:', twitterUserId, 'Fetching tweets...')
+
+                            // Fetch Liked Tweets
+                            const likedResult = await getLikedTweets(twitterUserId)
+                            console.log('Liked Tweets Result:', likedResult)
+
+                            // Fetch Home Timeline
+                            const timelineResult = await getHomeTimeline(twitterUserId)
+                            console.log('Timeline Result:', timelineResult)
+                        } else {
+                            console.warn('Could not extract Twitter User ID from result:', userResult.data)
+                        }
+                    } else {
+                        console.log('Twitter user fetch skipped or failed (might be a Gmail connection only)')
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch Twitter data:', error)
+                }
             }
             fetchAndLog()
         }
@@ -86,7 +116,6 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
             setStep(step + 1)
         }
     }
-
     const handleIntegrationClick = async (platform: string) => {
         const origin = typeof window !== 'undefined' ? window.location.origin : undefined
         if (platform === 'Gmail') {
@@ -115,6 +144,15 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                 }
             } catch (error) {
                 console.error('Failed to start YouTube auth:', error)
+            }
+        } else if (platform === 'X') {
+            try {
+                const result = await startTwitterAuth(origin)
+                if (result.url) {
+                    window.location.assign(result.url)
+                }
+            } catch (error) {
+                console.error('Failed to start Twitter auth:', error)
             }
         } else {
             console.log('Clicked', platform)
