@@ -10,7 +10,7 @@ import { createStreamableValue } from '@ai-sdk/rsc';
 import Exa from 'exa-js';
 import { fetchEmails } from './composio/gmail';
 import { fetchCalendarEvents } from './composio/google-calendar';
-import { getTwitterUser, getLikedTweets } from './composio/twitter';
+import { getTwitterUser, getLikedTweets, getHomeTimeline } from './composio/twitter';
 import { createClient } from '@/lib/supabase/server';
 import { sections as baseSections } from '@/lib/home/sections';
 
@@ -31,7 +31,7 @@ export async function generateInterestsAction() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
-            log(`Authenticated user: ${user.id}`);
+            log(`Authenticated user: ${user.email || 'User'}`);
 
             // 2. Fetch Data
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +41,9 @@ export async function generateInterestsAction() {
                 const emails = await fetchEmails();
                 if (emails.success) {
                     emailData = emails.emails || [];
-                    log(`Fetched ${emailData.length} emails.`);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const recentEmails = emailData.slice(0, 5).map((e: any) => `"${e.subject}"`).join('\n- ');
+                    log(`Fetched ${emailData.length} emails. Recent subjects:\n- ${recentEmails}`);
                 } else {
                     log(`Failed to fetch emails: ${emails.error}`);
                 }
@@ -56,7 +58,9 @@ export async function generateInterestsAction() {
                 const events = await fetchCalendarEvents();
                 if (events.success) {
                     calendarData = events.events || [];
-                    log(`Fetched ${calendarData.length} calendar events.`);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const recentEvents = calendarData.slice(0, 5).map((e: any) => `"${e.summary || 'Event'}"`).join('\n- ');
+                    log(`Fetched ${calendarData.length} calendar events. Recent:\n- ${recentEvents}`);
                 } else {
                     log(`Failed to fetch calendar events: ${events.error}`);
                 }
@@ -66,6 +70,8 @@ export async function generateInterestsAction() {
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let twitterData: any[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let twitterTimelineData: any[] = [];
             try {
                 log('Fetching Twitter user...');
                 const twitterUser = await getTwitterUser();
@@ -83,13 +89,35 @@ export async function generateInterestsAction() {
                         (Array.isArray(rawData) && rawData[0]?.id);
 
                     if (twitterId) {
-                        log(`Fetching liked tweets for Twitter ID: ${twitterId}...`);
+                        log(`Fetching liked tweets for user @${twitterUser.data.username || 'unknown'}...`);
                         const tweets = await getLikedTweets(twitterId);
                         if (tweets.success) {
-                            twitterData = tweets.data || [];
-                            log(`Fetched ${Array.isArray(twitterData) ? twitterData.length : 'some'} liked tweets.`);
+                            // Handle nested structure: rawData.data.data is the array of tweets
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const rawTweets = (tweets.data as any)?.data?.data || (tweets.data as any)?.data || tweets.data || [];
+                            twitterData = Array.isArray(rawTweets) ? rawTweets : [];
+
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const snippets = twitterData.slice(0, 5).map((t: any) => `"${t.text?.substring(0, 100).replace(/\n/g, ' ')}..."`).join('\n- ');
+                            log(`Fetched ${twitterData.length} liked tweets:\n- ${snippets}`);
                         } else {
                             log(`Failed to fetch liked tweets: ${tweets.error}`);
+                        }
+
+                        // Fetch Home Timeline
+                        log(`Fetching home timeline for user @${twitterUser.data.username || 'unknown'}...`);
+                        const timeline = await getHomeTimeline(twitterId);
+                        if (timeline.success) {
+                            // Handle nested structure: rawData.data.data is the array of tweets
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const rawTimeline = (timeline.data as any)?.data?.data || (timeline.data as any)?.data || timeline.data || [];
+                            twitterTimelineData = Array.isArray(rawTimeline) ? rawTimeline : [];
+
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const snippets = twitterTimelineData.slice(0, 5).map((t: any) => `"${t.text?.substring(0, 100).replace(/\n/g, ' ')}..."`).join('\n- ');
+                            log(`Fetched ${twitterTimelineData.length} timeline tweets:\n- ${snippets}`);
+                        } else {
+                            log(`Failed to fetch home timeline: ${timeline.error}`);
                         }
                     } else {
                         log('Could not determine Twitter User ID from response.');
@@ -123,6 +151,12 @@ export async function generateInterestsAction() {
             <twitter_likes>
             ${JSON.stringify(Array.isArray(twitterData) ? twitterData.slice(0, 10) : []).slice(0, 3000)}
             </twitter_likes>
+
+            <twitter_timeline>
+            ${JSON.stringify(Array.isArray(twitterTimelineData) ? twitterTimelineData.slice(0, 10) : []).slice(0, 3000)}
+            </twitter_timeline>
+
+
             </user_data>
 
             <instructions>
@@ -296,12 +330,12 @@ export async function generateInterestsAction() {
 
             const processInterest = async (category: string, interest: string) => {
                 try {
-                    log(`Generating search queries for ${category} interest: "${interest.substring(0, 30)}..."`);
+                    log(`Generating search queries for ${category} interest: "${interest}"`);
                     const queries = await generateQueriesForInterest(category, interest);
                     const articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[] = [];
 
                     for (const query of queries) {
-                        log(`Searching news for query: "${query.substring(0, 40)}..."`);
+                        log(`Searching news for query: "${query}"`);
                         const result = await exa.searchAndContents(query, {
                             type: "auto",
                             useAutoprompt: true,
@@ -337,7 +371,7 @@ export async function generateInterestsAction() {
                 articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[]
             ) => {
                 try {
-                    log(`Generating news cards for ${category} interest: "${interest.substring(0, 30)}..."`);
+                    log(`Drafting article for ${category} interest: "${interest}"`);
                     const sourceArticles = articles.slice(0, 6).map((article) => ({
                         title: article.title,
                         url: article.url,

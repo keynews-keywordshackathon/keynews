@@ -165,55 +165,33 @@ export default function GeneratePage() {
         });
     }, [events, isGenerating]);
 
+    // Auto-start generation on load
+    const hasStartedRef = useRef(false);
+    useEffect(() => {
+        if (!hasStartedRef.current) {
+            hasStartedRef.current = true;
+            handleGenerate();
+        }
+    }, []);
+
     return (
-        <div className="container mx-auto p-4 max-w-5xl min-h-screen flex flex-col gap-8">
-            <div className="space-y-2 text-center py-8">
+        <div className={`container mx-auto p-4 max-w-5xl flex flex-col gap-8 ${result ? 'min-h-screen' : 'h-screen overflow-hidden'}`}>
+            <div className="space-y-2 text-center py-8 flex-shrink-0">
                 <h1 className="text-4xl font-serif font-bold tracking-tight">Personalized News Edition</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
                     Generate a custom newspaper based on your emails, calendar, and interests.
                 </p>
             </div>
 
-            {/* Control Center */}
-            {!result && (
-                <div className="w-full max-w-xl mx-auto">
-                    <Card className="p-6 border-2">
-                        <div className="flex flex-col items-center gap-4">
-                            <Button
-                                onClick={handleGenerate}
-                                disabled={isGenerating}
-                                size="lg"
-                                className="w-full text-lg h-12"
-                            >
-                                {isGenerating ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Creating Your Edition...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Newspaper className="mr-2 h-5 w-5" />
-                                        Generate My Paper
-                                    </>
-                                )}
-                            </Button>
-                            <p className="text-xs text-muted-foreground text-center">
-                                Analyzes your recent digital footprint to find relevant news.
-                            </p>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
             {/* Event Stream / Progress */}
             {(isGenerating || (events.length > 0 && !result)) && (
-                <div className="w-full max-w-2xl mx-auto relative perspective-[1000px]">
+                <div className="w-full max-w-2xl mx-auto relative perspective-[1000px] flex-1 min-h-0">
                     {/* Top fade gradient overlay */}
                     <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
 
                     <div
                         ref={scrollContainerRef}
-                        className="space-y-3 max-h-[500px] overflow-y-auto px-4 pb-10 pt-10 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                        className="space-y-3 h-full overflow-y-auto px-4 pb-10 pt-10 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                         style={{
                             transformStyle: 'preserve-3d',
                             transform: 'rotateX(2deg)' // Slight 3D effect like the reference
@@ -314,21 +292,9 @@ function EventCarouselCard({ event }: { event: UIEvent }) {
                                 {event.message}
                             </span>
                         ) : (
-                            <>
-                                <div className="whitespace-pre-wrap break-words">
-                                    {displayMessage}
-                                    {!isExpanded && shouldTruncate && '...'}
-                                </div>
-                                {shouldTruncate && (
-                                    <button
-                                        onClick={() => setIsExpanded(!isExpanded)}
-                                        className="text-primary hover:underline text-xs mt-1 flex items-center gap-1"
-                                    >
-                                        {isExpanded ? 'Show less' : 'Show more'}
-                                        <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                                    </button>
-                                )}
-                            </>
+                            <div className="whitespace-pre-wrap break-words">
+                                {event.message}
+                            </div>
                         )}
                     </div>
                 </div>
