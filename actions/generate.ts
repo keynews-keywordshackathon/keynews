@@ -1,6 +1,10 @@
 'use server'
 
-import { deepseek } from '@ai-sdk/deepseek';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 import { generateText } from 'ai';
 import { createStreamableValue } from '@ai-sdk/rsc';
 import Exa from 'exa-js';
@@ -87,34 +91,86 @@ export async function generateInterestsAction() {
 
         // 3. Prepare Prompt
         const prompt = `
-            User Data:
-            Emails (sample): ${JSON.stringify(emailData.slice(0, 10)).slice(0, 3000)}
-            Calendar (sample): ${JSON.stringify(calendarData.slice(0, 10)).slice(0, 3000)}
-            Liked Tweets (sample): ${JSON.stringify(twitterData.slice(0, 10)).slice(0, 3000)}
+            <task>
+            Analyze user data from multiple sources to identify and articulate specific interests across three categories: personal, local, and national/global.
+            </task>
 
-            Based on the above user data, generate three interests for personal, three for local, and three for national/global. 
-            Each interest should be specific and detailed, including what suggests the user is interested in the topic, how it relates to them etc. 
-            One paragraph for each interest.
-            
-            Format the output as JSON:
+            <context>
+            This analysis will be used to understand the user's engagement patterns and preferences across different spheres of their life. The goal is to surface meaningful, specific interests that reflect genuine engagement, not generic categories.
+            </context>
+
+            <user_data>
+            <emails>
+            ${JSON.stringify(emailData.slice(0, 10)).slice(0, 3000)}
+            </emails>
+
+            <calendar_events>
+            ${JSON.stringify(calendarData.slice(0, 10)).slice(0, 3000)}
+            </calendar_events>
+
+            <twitter_likes>
+            ${JSON.stringify(twitterData.slice(0, 10)).slice(0, 3000)}
+            </twitter_likes>
+            </user_data>
+
+            <instructions>
+            1. Analyze the user data above to identify patterns, recurring themes, and areas of engagement
+            2. For each of the three categories (personal, local, global), identify exactly three distinct interests
+            3. For each interest, write one detailed paragraph that includes:
+            - The specific interest or topic area
+            - Concrete evidence from the data that suggests this interest (e.g., specific emails, events, or tweets)
+            - How this interest relates to the user's life and activities
+            - Why this is a meaningful interest (not just a passing mention)
+            4. Ensure interests are specific and actionable, not generic (e.g., "urban gardening with focus on native plants" rather than "gardening")
+            </instructions>
+
+            <interest_categories>
+            - **Personal**: Interests related to hobbies, self-improvement, health, personal development, or individual pursuits
+            - **Local**: Interests tied to the user's community, city, neighborhood, or regional issues and events
+            - **Global**: Interests in national or international topics, trends, issues, or movements
+            </interest_categories>
+
+            <output_format>
+            Provide your response as valid JSON with the following structure:
             {
-            "personal": ["interest 1 description...", "interest 2 description...", "interest 3 description..."],
-            "local": ["interest 1 description...", "interest 2 description...", "interest 3 description..."],
-            "global": ["interest 1 description...", "interest 2 description...", "interest 3 description..."]
+            "personal": [
+                "Interest 1: [Detailed paragraph describing the interest, evidence from data, and relevance to user]",
+                "Interest 2: [Detailed paragraph describing the interest, evidence from data, and relevance to user]",
+                "Interest 3: [Detailed paragraph describing the interest, evidence from data, and relevance to user]"
+            ],
+            "local": [
+                "Interest 1: [Detailed paragraph describing the interest, evidence from data, and relevance to user]",
+                "Interest 2: [Detailed paragraph describing the interest, evidence from data, and relevance to user]",
+                "Interest 3: [Detailed paragraph describing the interest, evidence from data, and relevance to user]"
+            ],
+            "global": [
+                "Interest 1: [Detailed paragraph describing the interest, evidence from data, and relevance to user]",
+                "Interest 2: [Detailed paragraph describing the interest, evidence from data, and relevance to user]",
+                "Interest 3: [Detailed paragraph describing the interest, evidence from data, and relevance to user]"
+            ]
             }
-        `;
+            </output_format>
 
-        log('Sending prompt to DeepSeek...');
+            <constraints>
+            - Each paragraph must be substantive (4-6 sentences minimum)
+            - Include specific references to the data provided
+            - Avoid generic or overly broad interests
+            - Ensure all three interests in each category are distinct from each other
+            - Output must be valid, parseable JSON
+            </constraints>
+        `;  
+
+        log('Sending prompt to Gemini...');
 
         // 4. Generate Text
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let interests: any = {};
         try {
             const { text } = await generateText({
-                model: deepseek('deepseek-chat'),
+                model: google('gemini-3-pro-preview'),
                 prompt: prompt,
             });
-            log('Received response from DeepSeek.');
+            log('Received response from Gemini.');
             
             // Try to parse JSON
             const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
@@ -135,14 +191,73 @@ export async function generateInterestsAction() {
         const generateQueriesForInterest = async (category: string, interest: string) => {
             try {
                 const queryPrompt = `
-Generate 3 concise web search queries for the following interest.
-Return a JSON array of strings only.
+                    <task>
+                    Generate three concise, targeted web search queries to find recent, relevant information about a specific user interest.
+                    </task>
 
-Category: ${category}
-Interest: ${interest}
-                `;
+                    <context>
+                    These search queries will be used to discover current articles, trends, and developments related to the user's interest. The queries should be optimized for search engines and focus on recent content from the last year to ensure relevance and timeliness.
+                    </context>
+
+                    <interest_details>
+                    <category>${category}</category>
+                    <interest_description>${interest}</interest_description>
+                    </interest_details>
+
+                    <instructions>
+                    1. Analyze the interest description to identify key topics, themes, and specific aspects worth exploring
+                    2. Generate exactly three distinct search queries that:
+                    - Are concise and focused (5-10 words each)
+                    - Target different angles or aspects of the interest
+                    - Are optimized for search engine effectiveness
+                    - Include temporal constraints to find recent content from the last year
+                    3. Ensure queries are specific enough to return relevant results, not generic broad searches
+                    4. Avoid redundancy - each query should explore a different dimension of the interest
+                    </instructions>
+
+                    <query_requirements>
+                    - Each query must include a time constraint (e.g., "2024", "2025", "last year", "recent")
+                    - Focus on actionable, specific search terms rather than generic phrases
+                    - Use terminology that would appear in recent articles, news, or discussions
+                    - Consider including terms like "trends", "developments", "latest", "new" when appropriate
+                    - Optimize for discoverability of current, high-quality content
+                    </query_requirements>
+
+                    <examples>
+                    <example>
+                    If the interest is about "sustainable urban farming practices in Chicago":
+                    Good queries:
+                    - "Chicago urban farming innovations 2024 2025"
+                    - "sustainable rooftop gardens Chicago recent developments"
+                    - "community farming initiatives Chicago last year"
+
+                    Bad queries (too generic or no temporal constraint):
+                    - "urban farming"
+                    - "Chicago gardening"
+                    - "sustainable agriculture techniques"
+                    </example>
+                    </examples>
+
+                    <output_format>
+                    Return ONLY a valid JSON array of exactly three strings. Do not include any explanation, preamble, or additional text.
+
+                    Format:
+                    ["query 1", "query 2", "query 3"]
+
+                    Each query should be a plain text string optimized for web search engines.
+                    </output_format>
+
+                    <constraints>
+                    - Output must be valid, parseable JSON array
+                    - Exactly three queries required
+                    - Each query must be 5-10 words long
+                    - Each query must include temporal reference to last year/2024/2025
+                    - No markdown formatting, code blocks, or explanatory text
+                    - Queries should be distinct and non-overlapping
+                    </constraints>
+                `;  
                 const { text } = await generateText({
-                    model: deepseek('deepseek-chat'),
+                    model: google('gemini-3-pro-preview'),
                     prompt: queryPrompt,
                 });
                 const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
