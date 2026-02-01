@@ -114,7 +114,14 @@ export async function generateInterestsAction() {
                             (Array.isArray(rawData) && rawData[0]?.id);
 
                         if (twitterId) {
-                            log(`Fetching liked tweets for user @${twitterUser.data.username || 'unknown'}...`);
+                            const twitterUsername =
+                                rawData.username ||
+                                rawData.data?.username ||
+                                rawData.data?.data?.username ||
+                                (Array.isArray(rawData) && rawData[0]?.username) ||
+                                'unknown';
+
+                            log(`Fetching liked tweets for user @${twitterUsername}`);
                             const tweets = await getLikedTweets(twitterId);
                             if (tweets.success) {
                                 // Handle nested structure: rawData.data.data is the array of tweets
@@ -130,7 +137,7 @@ export async function generateInterestsAction() {
                             }
 
                             // Fetch Home Timeline
-                            log(`Fetching home timeline for user @${twitterUser.data.username || 'unknown'}...`);
+                            log(`Fetching home timeline for user @${twitterUsername}`);
                             const timeline = await getHomeTimeline(twitterId);
                             if (timeline.success) {
                                 // Handle nested structure: rawData.data.data is the array of tweets
@@ -154,7 +161,28 @@ export async function generateInterestsAction() {
                     log(`Error fetching Twitter data: ${e}`);
                 }
 
-                // 3. Prepare Prompt
+                // 3. Prepare Prompt for Keywords AI
+                const keywordsAIHeaderContent = {
+                    "prompt": {
+                        "prompt_id": "1d855daae9bd471091a17d11f5fdad31",
+                        "variables": {
+                            "emailData": JSON.stringify(emailData.slice(0, 10)).slice(0, 3000),
+                            "currentYear": currentYear.toString(),
+                            "twitterData": JSON.stringify(Array.isArray(twitterData) ? twitterData.slice(0, 10) : []).slice(0, 3000),
+                            "calendarData": JSON.stringify(calendarData.slice(0, 10)).slice(0, 3000),
+                            "currentMonth": currentMonth,
+                            "currentDateString": currentDateString,
+                            "twitterTimelineData": JSON.stringify(Array.isArray(twitterTimelineData) ? twitterTimelineData.slice(0, 10) : []).slice(0, 3000)
+                        }
+                    }
+                };
+                const encoded = Buffer.from(JSON.stringify(keywordsAIHeaderContent)).toString('base64');
+
+                const keywordsAIGoogle = createGoogleGenerativeAI({
+                    baseURL: process.env.KEYWORDSAI_ENDPOINT_LOCAL,
+                    apiKey: process.env.KEYWORDSAI_API_KEY_TEST,
+                });
+
                 const prompt = `
             <task>
             Analyze user data from multiple sources to identify and articulate interests across three categories: personal, local, and national/global.
@@ -241,22 +269,45 @@ export async function generateInterestsAction() {
             </constraints>
         `;
 
-                log(`Sending prompt to Gemini with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, and ${twitterTimelineData.length} timeline tweets...`);
+                log(`Sending prompt to Keywords AI with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, and ${twitterTimelineData.length} timeline tweets...`);
 
-                // 4. Generate Text
+                // 4. Generate Text using Keywords AI
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let interests: any = {};
                 try {
-                    log('LLM CALL: Generating interests from user data...');
                     const { text } = await generateText({
-                        model: google('gemini-3-flash-preview'),
+                        model: keywordsAIGoogle("gemini-3-flash-preview"),
+                        providerOptions: {
+                            google: {
+                                headers: {
+                                    "X-Data-Keywordsai-Params": encoded
+                                }
+                            }
+                        },
                         prompt: prompt,
+                        temperature: 0.5,
                     });
-                    log('LLM CALL: Received response from Gemini.');
+                    
+                    log('Received list of interests from Keywords AI.');
 
                     // Try to parse JSON
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                     interests = JSON.parse(cleanResult);
+
+                    // Log the generated interests nicely
+                    let interestLog = "Generated Interests:\n";
+                    for (const category of ['personal', 'local', 'global']) {
+                        if (interests[category] && Array.isArray(interests[category])) {
+                            interestLog += `\n${category.charAt(0).toUpperCase() + category.slice(1)}:\n`;
+                            interests[category].forEach((interest: string) => {
+                                // Extract just the first sentence to keep it concise but descriptive
+                                const summary = interest.split('.')[0];
+                                interestLog += `- ${summary}...\n`;
+                            });
+                        }
+                    }
+                    log(interestLog);
+
                     stream.update({ type: 'interests', data: interests });
                 } catch (e) {
                     log(`Error generating/parsing interests: ${e}`);
@@ -341,12 +392,33 @@ export async function generateInterestsAction() {
                     - Queries should be distinct and non-overlapping
                     </constraints>
                 `;
-                        log('LLM CALL: Generating search queries for interest...');
+
+                        // Keywords AI header for queries
+                        const keywordsAIHeaderContent = {
+                            "prompt": {
+                                "prompt_id": "16cb04a1f0c64f01b65632abedaa5f1a",
+                                "variables": {
+                                    "currentYear": currentYear.toString(),
+                                    "currentDateString": currentDateString,
+                                    "currentMonth": currentMonth,
+                                    "category": category,
+                                    "interest": interest
+                                }
+                            }
+                        };
+                        const encoded = Buffer.from(JSON.stringify(keywordsAIHeaderContent)).toString('base64');
+
                         const { text } = await generateText({
-                            model: google('gemini-3-flash-preview'),
+                            model: keywordsAIGoogle("gemini-3-flash-preview"),
+                            providerOptions: {
+                                google: {
+                                    headers: {
+                                        "X-Data-Keywordsai-Params": encoded
+                                    }
+                                }
+                            },
                             prompt: queryPrompt,
                         });
-                        log('LLM CALL: Search queries generated');
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                         const parsed = JSON.parse(cleanResult);
                         if (Array.isArray(parsed)) {
@@ -364,12 +436,13 @@ export async function generateInterestsAction() {
 
                 const processInterest = async (category: string, interest: string) => {
                     try {
-                        log(`Generating search queries for ${category} interest: "${interest.substring(0, 30)}..."`);
+                        const interestSummary = interest.split('.')[0];
+                        log(`Generating search queries for ${category} interest: "${interestSummary}"`);
                         const queries = await generateQueriesForInterest(category, interest);
                         const articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[] = [];
 
                         for (const query of queries) {
-                            log(`Searching news for query: "${query.substring(0, 40)}..."`);
+                            log(`Searching news for query: "${query.split('.')[0]}..."`);
                             const result = await exa.searchAndContents(query, {
                                 type: "auto",
                                 useAutoprompt: true,
@@ -405,7 +478,6 @@ export async function generateInterestsAction() {
                     articles: { title: string | null, url: string, text: string | null, query: string, imageUrl?: string | null }[]
                 ) => {
                     try {
-                        log(`Generating news cards for ${category} interest: "${interest.substring(0, 30)}..."`);
                         const sourceArticles = articles.slice(0, 6).map((article) => ({
                             title: article.title,
                             url: article.url,
@@ -479,12 +551,35 @@ export async function generateInterestsAction() {
                     </output_format>
                 `;
 
-                        log('LLM CALL: Generating news cards from articles...');
+                        // Keywords AI header for articles
+                        const keywordsAIHeaderContent = {
+                            "prompt": {
+                                "prompt_id": "9db6ef12ef564406b99d2f442d515e6c",
+                                "variables": {
+                                    "currentDateString": currentDateString,
+                                    "currentMonth": currentMonth,
+                                    "currentYear": currentYear.toString(),
+                                    "category": category,
+                                    "interest": interest,
+                                    "sourceArticles": JSON.stringify(sourceArticles)
+                                }
+                            }
+                        };
+                        const encoded = Buffer.from(JSON.stringify(keywordsAIHeaderContent)).toString('base64');
+
+                        log(`Generating news cards from articles for interest: "${interest.split('.')[0]}"`);
                         const { text } = await generateText({
-                            model: google('gemini-3-flash-preview'),
-                            prompt
+                            model: keywordsAIGoogle("gemini-3-flash-preview"),
+                            providerOptions: {
+                                google: {
+                                    headers: {
+                                        "X-Data-Keywordsai-Params": encoded
+                                    }
+                                }
+                            },
+                            prompt: prompt,
                         });
-                        log('LLM CALL: News cards generated');
+
 
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                         const parsed = JSON.parse(cleanResult);
@@ -525,7 +620,14 @@ export async function generateInterestsAction() {
                             const enriched = await processInterest(category, interest);
                             enrichedInterests[category].push(enriched);
                             // Stream partial update if needed, or just logs
-                            stream.update({ type: 'log', message: `Found ${enriched.articles.length} articles for interest.` });
+                            const interestSummary = interest.split('.')[0];
+                            let foundMsg = `Found ${enriched.articles.length} articles for interest`;
+                            if (enriched.articles.length > 0) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                foundMsg += `: \n${enriched.articles.map((a: any) => `- ${a.title || 'Untitled'}`).join('\n')
+                                    } `;
+                            }
+                            log(foundMsg);
                         }
                     }
                 }
@@ -538,7 +640,10 @@ export async function generateInterestsAction() {
                             interest: item.interest,
                             articles: generatedArticles
                         });
-                        stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest.` });
+                        const interestSummary = item.interest.split('.')[0];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const articleTitles = generatedArticles.map((a: any) => `"${a.title}"`).join(', ');
+                        stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest: ${articleTitles}` });
                     }
                 }
 
@@ -565,19 +670,19 @@ export async function generateInterestsAction() {
                         });
 
                     if (error) {
-                        log(`Failed to save generated sections: ${error.message}`);
+                        log(`Failed to save generated sections: ${error.message} `);
                     } else {
-                        log('Saved generated sections to Supabase.');
+                        log('Saved generated sections to Supabase');
                     }
                 } catch (e) {
-                    log(`Error saving generated sections: ${e}`);
+                    log(`Error saving generated sections: ${e} `);
                 }
 
                 stream.update({ type: 'final_result', data: { interests, enrichedInterests, generatedSections } });
                 stream.done();
             });
         } catch (e) {
-            log(`Fatal error: ${e}`);
+            log(`Fatal error: ${e} `);
             stream.error(e);
         }
     })();
