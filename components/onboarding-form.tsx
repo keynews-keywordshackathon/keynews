@@ -290,7 +290,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                 <div className="space-y-2">
                                     <Label className="text-base">Select your interests</Label>
                                     <p className="text-sm text-muted-foreground">
-                                        Choose the topics you'd like to see in your personalized feed
+                                        Choose the topics you&apos;d like to see in your personalized feed
                                     </p>
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
