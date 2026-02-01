@@ -20,7 +20,7 @@ import { CrosswordGame } from "@/components/crossword/crossword-game";
 import { ConnectionsGame } from "@/components/connections/ConnectionsGame";
 import puzzleData from "@/lib/crossword/sample-puzzle.json";
 import type { PuzzleData } from "@/lib/crossword/types";
-import { sections, weatherPanel, stockPanel } from "@/lib/home/sections";
+import { sections, weatherPanel } from "@/lib/home/sections";
 import type { Puzzle } from "@/lib/connections/types";
 import { NytFrontSection } from "@/components/home/nyt-front-section";
 import { WeatherPanel } from "@/components/home/weather-panel";
@@ -35,13 +35,13 @@ const getPreviewText = (text: string, sentenceCount = 2) => {
 
 // Transform sections articles into NYTimes format
 // Returns both the NYT data and a Set of article titles used in the NYT section
-const transformToNytFormat = (sectionData: typeof sections): { 
+const transformToNytFormat = (sectionData: typeof sections): {
   nytData: Omit<NytFrontSectionProps, 'onArticleClick'> | null;
   usedArticleTitles: Set<string>;
 } => {
   const usedArticleTitles = new Set<string>();
   const allArticles = sectionData.flatMap((s) => s.articles);
-  
+
   if (allArticles.length === 0) return { nytData: null, usedArticleTitles };
 
   const personalSection = sectionData.find((s) => s.id === "personal");
@@ -55,9 +55,9 @@ const transformToNytFormat = (sectionData: typeof sections): {
   const leftArticlesRaw = (personalSection?.articles || [])
     .filter((a) => a !== centerArticle)
     .slice(0, 3);
-  
+
   leftArticlesRaw.forEach((a) => usedArticleTitles.add(a.title));
-  
+
   const leftArticles = leftArticlesRaw.map((article, index) => ({
     title: article.title,
     blurb: index === 0 ? getPreviewText(article.summary, 2) : undefined,
@@ -70,11 +70,11 @@ const transformToNytFormat = (sectionData: typeof sections): {
     blurb: getPreviewText(centerArticle.summary, 3),
     image: centerArticle.images?.[0]
       ? {
-          src: centerArticle.images[0].src ?? "",
-          alt: centerArticle.images[0].label || centerArticle.title,
-          label: centerArticle.images[0].label,
-          tint: centerArticle.images[0].tint,
-        }
+        src: centerArticle.images[0].src ?? "",
+        alt: centerArticle.images[0].label || centerArticle.title,
+        label: centerArticle.images[0].label,
+        tint: centerArticle.images[0].tint,
+      }
       : undefined,
     originalArticle: centerArticle,
   };
@@ -82,21 +82,21 @@ const transformToNytFormat = (sectionData: typeof sections): {
   // Bottom row: Local articles (2 articles with images)
   const bottomArticlesRaw = (localSection?.articles || []).slice(0, 2);
   bottomArticlesRaw.forEach((a) => usedArticleTitles.add(a.title));
-  
+
   const bottomArticlesList: NytArticle[] = bottomArticlesRaw.map((article) => ({
     title: article.title,
     blurb: getPreviewText(article.summary, 2),
     image: article.images?.[0]
       ? {
-          src: article.images[0].src ?? "",
-          alt: article.images[0].label || article.title,
-          label: article.images[0].label,
-          tint: article.images[0].tint,
-        }
+        src: article.images[0].src ?? "",
+        alt: article.images[0].label || article.title,
+        label: article.images[0].label,
+        tint: article.images[0].tint,
+      }
       : undefined,
     originalArticle: article,
   }));
-  
+
   // Ensure we have exactly 2 articles, pad if needed
   const bottomArticles: [NytArticle, NytArticle] = [
     bottomArticlesList[0] || { title: "" },
@@ -394,7 +394,7 @@ export default function Home() {
               { label: "Local", href: "#local" },
               { label: "Global", href: "#global" },
               { label: "Weather", href: "#weather" },
-              { label: "Stocks", href: "#stocks" },
+
               { label: "AI", href: "#agent-flow" },
               { label: "Games", href: "#games" },
               { label: "Actions", href: "#actions" },
@@ -433,10 +433,10 @@ export default function Home() {
                 const remainingArticles = section.articles.filter(
                   (article) => !usedArticleTitles.has(article.title)
                 );
-                
+
                 // Skip section if no articles remain
                 if (remainingArticles.length === 0) return null;
-                
+
                 return (
                   <div key={section.id} id={section.id} className="py-3">
                     <div className="mb-2 border-t border-b border-border" />
@@ -496,70 +496,70 @@ export default function Home() {
                                   </div>
                                 ))}
                               </div>
-                            <div className="space-y-2">
-                              <h4 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">{article.title}</h4>
-                              <div className="relative">
-                                <p className="article-body font-serif transition-colors group-hover:text-zinc-400">
-                                  {getPreviewText(article.summary)}
-                                </p>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                <span className="section-label">
-                                  Sources
-                                </span>
-                                {article.sources.map((source) => (
-                                  <Link
-                                    key={source.href}
-                                    onClick={(e) => e.stopPropagation()}
-                                    href={source.href}
-                                    className="newspaper-border-thin px-3 py-1 transition hover:bg-black/5"
-                                    target="_blank"
-                                  >
-                                    {source.label}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-4 relative group/action inline-block">
-                            <Link
-                              onClick={(e) => e.stopPropagation()}
-                              href={article.action.href}
-                              target="_blank"
-                              className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
-                            >
-                              <Sparkles className="size-4" />
-                              {article.action.label}
-                            </Link>
-                            
-                            {/* Hover Card */}
-                            <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
-                              <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
-                                {/* Arrow pointer */}
-                                <div className="absolute left-4 top-0 -translate-y-full">
-                                  <div className="border-8 border-transparent border-b-white" />
+                              <div className="space-y-2">
+                                <h4 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">{article.title}</h4>
+                                <div className="relative">
+                                  <p className="article-body font-serif transition-colors group-hover:text-zinc-400">
+                                    {getPreviewText(article.summary)}
+                                  </p>
                                 </div>
-                                <div className="absolute left-4 top-0 -translate-y-full">
-                                  <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
-                                </div>
-                                <div className="space-y-3 text-sm text-zinc-700">
-                                  <div>
-                                    <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                                      Why it matters
-                                    </p>
-                                    <p className="mt-1">{article.relevance}</p>
-                                  </div>
-                                  <div>
-                                    <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                                      Why act now
-                                    </p>
-                                    <p className="mt-1">{article.actionReason}</p>
-                                  </div>
+                                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                  <span className="section-label">
+                                    Sources
+                                  </span>
+                                  {article.sources.map((source) => (
+                                    <Link
+                                      key={source.href}
+                                      onClick={(e) => e.stopPropagation()}
+                                      href={source.href}
+                                      className="newspaper-border-thin px-3 py-1 transition hover:bg-black/5"
+                                      target="_blank"
+                                    >
+                                      {source.label}
+                                    </Link>
+                                  ))}
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        </article>
+                            <div className="mt-4 relative group/action inline-block">
+                              <Link
+                                onClick={(e) => e.stopPropagation()}
+                                href={article.action.href}
+                                target="_blank"
+                                className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
+                              >
+                                <Sparkles className="size-4" />
+                                {article.action.label}
+                              </Link>
+
+                              {/* Hover Card */}
+                              <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
+                                <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
+                                  {/* Arrow pointer */}
+                                  <div className="absolute left-4 top-0 -translate-y-full">
+                                    <div className="border-8 border-transparent border-b-white" />
+                                  </div>
+                                  <div className="absolute left-4 top-0 -translate-y-full">
+                                    <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
+                                  </div>
+                                  <div className="space-y-3 text-sm text-zinc-700">
+                                    <div>
+                                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                                        Why it matters
+                                      </p>
+                                      <p className="mt-1">{article.relevance}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                                        Why act now
+                                      </p>
+                                      <p className="mt-1">{article.actionReason}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </article>
                         );
                       })}
                     </div>
@@ -699,64 +699,7 @@ export default function Home() {
 
             <div className="border-t border-b border-border" />
 
-            <section id="stocks" className="newspaper-border p-4">
-              <div className="space-y-3">
-                <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
-                  <TrendingUp className="size-4 text-muted-foreground" />
-                  {stockPanel.title}
-                </p>
-                <div className="space-y-2">
-                  {stockPanel.tickers.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between text-sm">
-                      <span className="font-medium font-serif">{item.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={`font-medium ${item.change.startsWith('+') ? 'text-green-700' : 'text-red-700'}`}>
-                          {item.change}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="article-body mt-2 text-xs">{stockPanel.summary}</p>
-                <div className="mt-3 relative group/action inline-block">
-                  <Link
-                    href={stockPanel.action.href}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 transition hover:text-emerald-600"
-                  >
-                    <Sparkles className="size-3" />
-                    {stockPanel.action.label}
-                  </Link>
-                  
-                  {/* Hover Card */}
-                  <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
-                    <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
-                      {/* Arrow pointer */}
-                      <div className="absolute left-4 top-0 -translate-y-full">
-                        <div className="border-8 border-transparent border-b-white" />
-                      </div>
-                      <div className="absolute left-4 top-0 -translate-y-full">
-                        <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
-                      </div>
-                      <div className="space-y-3 text-sm text-zinc-700">
-                        <div>
-                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                            Why it matters
-                          </p>
-                          <p className="mt-1">{stockPanel.relevance}</p>
-                        </div>
-                        <div>
-                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                            Why act now
-                          </p>
-                          <p className="mt-1">{stockPanel.actionReason}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+
 
             <div className="newspaper-border-thin bg-transparent p-4">
               <div className="flex items-center justify-between gap-4">
