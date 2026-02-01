@@ -3,7 +3,7 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 const google = createGoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY,
+    apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
 import { generateText } from 'ai';
 import { createStreamableValue } from '@ai-sdk/rsc';
@@ -11,6 +11,7 @@ import Exa from 'exa-js';
 import { fetchEmails } from './composio/gmail';
 import { fetchCalendarEvents } from './composio/google-calendar';
 import { getTwitterUser, getLikedTweets, getHomeTimeline } from './composio/twitter';
+import { fetchYouTubeData } from './composio/youtube';
 import { createClient } from '@/lib/supabase/server';
 import { sections as baseSections } from '@/lib/home/sections';
 import { KeywordsAITelemetry } from '@keywordsai/tracing';
@@ -161,6 +162,22 @@ export async function generateInterestsAction() {
                     log(`Error fetching Twitter data: ${e}`);
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let youtubeChannelNames: string[] = [];
+                try {
+                    log('Fetching YouTube subscriptions...');
+                    const ytData = await fetchYouTubeData();
+                    if (ytData.success) {
+                        youtubeChannelNames = ytData.channelNames || [];
+                        const channelPreview = youtubeChannelNames.slice(0, 10).map((c: string) => `"${c}"`).join('\n- ');
+                        log(`Fetched ${youtubeChannelNames.length} YouTube subscriptions. Sample:\n- ${channelPreview}`);
+                    } else {
+                        log(`Failed to fetch YouTube data: ${ytData.errors?.subscriptions || 'Unknown error'}`);
+                    }
+                } catch (e) {
+                    log(`Error fetching YouTube data: ${e}`);
+                }
+
                 // 3. Prepare Prompt for Keywords AI
                 const keywordsAIHeaderContent = {
                     "prompt": {
@@ -172,7 +189,8 @@ export async function generateInterestsAction() {
                             "calendarData": JSON.stringify(calendarData.slice(0, 10)).slice(0, 3000),
                             "currentMonth": currentMonth,
                             "currentDateString": currentDateString,
-                            "twitterTimelineData": JSON.stringify(Array.isArray(twitterTimelineData) ? twitterTimelineData.slice(0, 10) : []).slice(0, 3000)
+                            "twitterTimelineData": JSON.stringify(Array.isArray(twitterTimelineData) ? twitterTimelineData.slice(0, 10) : []).slice(0, 3000),
+                            "youtubeChannelNames": JSON.stringify(youtubeChannelNames.slice(0, 50)).slice(0, 3000)
                         }
                     }
                 };
@@ -212,6 +230,9 @@ export async function generateInterestsAction() {
             ${JSON.stringify(Array.isArray(twitterTimelineData) ? twitterTimelineData.slice(0, 10) : []).slice(0, 3000)}
             </twitter_timeline>
 
+            <youtube_subscriptions>
+            ${JSON.stringify(youtubeChannelNames.slice(0, 50)).slice(0, 3000)}
+            </youtube_subscriptions>
 
             </user_data>
 
@@ -269,7 +290,7 @@ export async function generateInterestsAction() {
             </constraints>
         `;
 
-                log(`Sending prompt to Keywords AI with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, and ${twitterTimelineData.length} timeline tweets...`);
+                log(`Sending prompt to Keywords AI with ${emailData.length} emails, ${calendarData.length} events, ${twitterData.length} liked tweets, ${twitterTimelineData.length} timeline tweets, and ${youtubeChannelNames.length} YouTube subscriptions...`);
 
                 // 4. Generate Text using Keywords AI
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

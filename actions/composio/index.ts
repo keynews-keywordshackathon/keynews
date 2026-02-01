@@ -24,6 +24,7 @@ export {
     fetchYouTubeSubscriptions,
     fetchYouTubeChannelActivities,
     fetchYouTubeData,
+    searchArticleYouTubeVideos,
 } from './youtube'
 
 // Twitter actions

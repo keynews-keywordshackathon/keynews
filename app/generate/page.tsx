@@ -15,7 +15,8 @@ import {
     XCircle,
     Mail,
     Calendar,
-    Twitter
+    Twitter,
+    Youtube
 } from 'lucide-react';
 
 // --- Types ---
@@ -256,6 +257,7 @@ function EventCarouselCard({ event }: { event: UIEvent }) {
             if (lower.includes('email')) return <Mail className="h-5 w-5" />;
             if (lower.includes('twitter') || lower.includes('tweet')) return <Twitter className="h-5 w-5" />;
             if (lower.includes('calendar') || lower.includes('event')) return <Calendar className="h-5 w-5" />;
+            if (lower.includes('youtube') || lower.includes('subscription')) return <Youtube className="h-5 w-5" />;
             return <Search className="h-5 w-5" />;
         }
         if (event.type === 'search') return <Search className="h-5 w-5" />;
@@ -273,6 +275,7 @@ function EventCarouselCard({ event }: { event: UIEvent }) {
                 if (lower.includes('email')) return 'Fetching Emails';
                 if (lower.includes('twitter') || lower.includes('tweet')) return 'Fetching Twitter';
                 if (lower.includes('calendar') || lower.includes('event')) return 'Fetching Calendar';
+                if (lower.includes('youtube') || lower.includes('subscription')) return 'Fetching YouTube';
                 return 'Gathering Data';
             }
             case 'plan': return 'Analyzing & Planning';

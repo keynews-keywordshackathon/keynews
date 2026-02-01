@@ -17,37 +17,37 @@ import { startGmailAuth, startCalendarAuth, startYouTubeAuth, startTwitterAuth, 
 import { saveOnboardingData } from '@/actions/onboarding'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
-import { 
+import {
     Calendar, Twitter, Mail, Youtube, Newspaper,
-    Monitor, Bot, Trophy, Landmark, Film, Briefcase, 
-    FlaskConical, Heart, Plane, Pill, UtensilsCrossed, 
+    Monitor, Bot, Trophy, Landmark, Film, Briefcase,
+    FlaskConical, Heart, Plane, Pill, UtensilsCrossed,
     Leaf, Palette, GraduationCap, Gamepad2
 } from 'lucide-react'
 
 const INTEGRATIONS = [
-    { 
-        id: 'Google Calendar', 
-        name: 'Google Calendar', 
+    {
+        id: 'Google Calendar',
+        name: 'Google Calendar',
         description: 'Events, schedules, and appointments',
-        icon: Calendar 
+        icon: Calendar
     },
-    { 
-        id: 'X', 
-        name: 'X (Twitter)', 
+    {
+        id: 'X',
+        name: 'X (Twitter)',
         description: 'Tweets, likes, and timeline',
-        icon: Twitter 
+        icon: Twitter
     },
-    { 
-        id: 'Gmail', 
-        name: 'Gmail', 
+    {
+        id: 'Gmail',
+        name: 'Gmail',
         description: 'Emails and newsletters',
-        icon: Mail 
+        icon: Mail
     },
-    { 
-        id: 'YouTube', 
-        name: 'YouTube', 
+    {
+        id: 'YouTube',
+        name: 'YouTube',
         description: 'Subscriptions and watch history',
-        icon: Youtube 
+        icon: Youtube
     },
 ]
 
@@ -75,6 +75,15 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
     const [step, setStep] = useState(() => (connectedAccountId ? 3 : 1))
     const totalSteps = 3
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+    const [connectedIntegrations, setConnectedIntegrations] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return []
+        try {
+            const stored = localStorage.getItem('onboarding_connected')
+            return stored ? JSON.parse(stored) : []
+        } catch {
+            return []
+        }
+    })
     const [fullName, setFullName] = useState('')
     const [location, setLocation] = useState('')
     const displayStep = connectedAccountId ? 3 : step
@@ -163,6 +172,11 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
         }
     }
     const handleIntegrationClick = async (platform: string) => {
+        setConnectedIntegrations((prev) => {
+            const next = prev.includes(platform) ? prev : [...prev, platform]
+            try { localStorage.setItem('onboarding_connected', JSON.stringify(next)) } catch { }
+            return next
+        })
         const origin = typeof window !== 'undefined' ? window.location.origin : undefined
         if (platform === 'Gmail') {
             try {
@@ -242,8 +256,8 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                 </div>
                                 <h3 className="text-2xl font-bold text-center">News That Knows You</h3>
                                 <p className="text-muted-foreground text-center max-w-md">
-                                    We analyze your interests, connect to your digital life, 
-                                    and create a personalized newspaper written for you. 
+                                    We analyze your interests, connect to your digital life,
+                                    and create a personalized newspaper written for you.
                                 </p>
                                 <div className="grid grid-cols-2 gap-4 w-full mt-10">
                                     <div className="grid gap-2">
@@ -316,9 +330,15 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                             type="button"
                                             variant="outline"
                                             onClick={() => handleIntegrationClick(integration.id)}
-                                            className="group w-full h-auto py-4 px-4 flex flex-row items-center justify-start gap-4 border-[1.5px] hover:border-black"
+                                            className={cn(
+                                                "group w-full h-auto py-4 px-4 flex flex-row items-center justify-start gap-4 border-[1.5px] hover:border-black",
+                                                connectedIntegrations.includes(integration.id) && "bg-[#edecea] border-black hover:bg-[#edecea]"
+                                            )}
                                         >
-                                            <div className="size-10 shrink-0 rounded-full bg-[#f5f5f4] group-hover:bg-[#e8e8e6] flex items-center justify-center transition-colors">
+                                            <div className={cn(
+                                                "size-10 shrink-0 rounded-full bg-[#f5f5f4] flex items-center justify-center transition-colors",
+                                                connectedIntegrations.includes(integration.id) ? "bg-[#e8e8e6] group-hover:bg-[#e8e8e6]" : "group-hover:bg-[#e8e8e6]"
+                                            )}>
                                                 <integration.icon className="size-5" strokeWidth={1.5} />
                                             </div>
                                             <div className="text-left">

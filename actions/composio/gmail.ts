@@ -319,7 +319,7 @@ export async function createArticleEmailDraft(article: ArticleForEmail) {
 
     const entityId = user.id
     const composio = getComposioClient()
-    const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY })
+    const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY })
 
     try {
         // Step 1: Generate email content with Gemini

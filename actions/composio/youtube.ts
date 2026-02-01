@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { generateText } from 'ai'
 import { getComposioClient } from './shared'
 
 // ============================================================================
@@ -326,4 +328,141 @@ export async function fetchYouTubeData() {
     }
 
     // TODO: only gets 50 channels, try to gete more
+}
+
+// ============================================================================
+// YouTube Video Search from Article
+// ============================================================================
+
+interface ArticleForYouTube {
+    title: string
+    summary: string
+    relevance: string
+    actionReason: string
+    action: { label: string; cta: string; href: string }
+}
+
+/**
+ * Search YouTube for videos related to an article's topic.
+ * Uses Gemini to generate a search query, then Composio YOUTUBE_SEARCH_YOU_TUBE.
+ * @param article The article data to search YouTube for
+ * @returns Object containing success status and array of video results
+ */
+export async function searchArticleYouTubeVideos(article: ArticleForYouTube) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'User not authenticated' }
+    }
+
+    const entityId = user.id
+    const composio = getComposioClient()
+    const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY })
+
+    try {
+        // Step 1: Generate a YouTube search query with Gemini
+        const prompt = `Based on the following news article, generate a concise YouTube search query to find related video content.
+
+Article Title: ${article.title}
+Summary: ${article.summary}
+Why it matters: ${article.relevance}
+Suggested action: ${article.action.label}
+
+Write a JSON response with:
+- "query": a concise YouTube search query (5-10 words) that would find relevant explainer videos, news coverage, or discussions about this topic
+
+Respond with valid JSON only, no markdown fences.`
+
+        const { text: generated } = await generateText({
+            model: google('gemini-3-flash-preview'),
+            system: 'You generate concise YouTube search queries from news articles. Always respond with valid JSON only.',
+            prompt,
+        })
+
+        if (!generated) {
+            return { success: false, error: 'Failed to generate search query' }
+        }
+
+        const { query } = JSON.parse(generated)
+
+        // Step 2: Search YouTube via Composio
+        const tools = await composio.tools.get(entityId, {
+            tools: ['YOUTUBE_SEARCH_YOU_TUBE'],
+        })
+
+        if (!tools || tools.length === 0) {
+            return { success: false, error: 'YouTube search tool not available. Please connect your YouTube account.' }
+        }
+
+        const mockToolCall = {
+            id: `call_yt_search_${Date.now()}`,
+            type: 'function',
+            function: {
+                name: 'YOUTUBE_SEARCH_YOU_TUBE',
+                arguments: JSON.stringify({
+                    query,
+                    max_results: 5,
+                    type: 'video',
+                }),
+            },
+        }
+
+        const mockResponse = {
+            choices: [{
+                message: {
+                    tool_calls: [mockToolCall],
+                },
+            }],
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
+
+        console.log('[Composio] YouTube search result:', JSON.stringify(result, null, 2))
+
+        // Parse videos from result
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let videos: any[] = []
+
+        if (Array.isArray(result)) {
+            for (const item of result) {
+                if (item.content) {
+                    try {
+                        const content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content
+                        if (content.data?.items) {
+                            videos = content.data.items
+                        } else if (Array.isArray(content)) {
+                            videos = content
+                        }
+                    } catch (e) {
+                        console.error('[Composio] Error parsing YouTube search results:', e)
+                    }
+                }
+            }
+        }
+
+        // Extract useful video info
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cleanedVideos = videos.map((v: any) => ({
+            videoId: v.id?.videoId || v.videoId,
+            title: v.snippet?.title || v.title || 'Untitled',
+            description: v.snippet?.description || v.description || '',
+            channelTitle: v.snippet?.channelTitle || v.channelTitle || '',
+            thumbnail: v.snippet?.thumbnails?.medium?.url || v.snippet?.thumbnails?.default?.url || '',
+            url: v.id?.videoId ? `https://www.youtube.com/watch?v=${v.id.videoId}` : (v.videoId ? `https://www.youtube.com/watch?v=${v.videoId}` : ''),
+        }))
+
+        return {
+            success: true,
+            query,
+            videos: cleanedVideos,
+        }
+    } catch (error) {
+        console.error('Error searching YouTube for article:', error)
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Failed to search YouTube',
+        }
+    }
 }
