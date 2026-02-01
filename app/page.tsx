@@ -83,24 +83,21 @@ export default function Home() {
   return (
     <div
       id="top"
-      className="relative min-h-screen overflow-hidden paper-texture text-foreground"
+      className="relative min-h-screen overflow-hidden bg-background text-foreground"
     >
       <div className="pointer-events-none absolute inset-0" />
       <div
-        className={`fixed inset-0 z-40 ${
-          isAssistantOpen ? "pointer-events-auto" : "pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-40 ${isAssistantOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
       >
         <div
-          className={`absolute inset-0 bg-black/30 transition-opacity ${
-            isAssistantOpen ? "opacity-80" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-black/30 transition-opacity ${isAssistantOpen ? "opacity-80" : "opacity-0"
+            }`}
           onClick={() => setIsAssistantOpen(false)}
         />
         <div
-          className={`absolute right-0 top-0 h-full w-full max-w-sm bg-white/90 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${
-            isAssistantOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute right-0 top-0 h-full w-full max-w-sm bg-white/90 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${isAssistantOpen ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between border-b border-black/5 px-6 py-4">
@@ -157,11 +154,11 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ 
+              transition={{
                 type: "spring",
                 damping: 25,
                 stiffness: 300,
-                duration: 0.4 
+                duration: 0.4
               }}
               className="relative w-[80vw] max-w-[80vw] overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-white/15 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.75)] backdrop-blur-2xl"
             >
@@ -182,9 +179,8 @@ export default function Home() {
                     {activeArticle.images.map((image) => (
                       <div
                         key={`${activeArticle.title}-${image.label}`}
-                        className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${
-                          activeArticle.images.length === 1 ? "col-span-2" : ""
-                        }`}
+                        className={`relative h-48 overflow-hidden rounded-2xl bg-gradient-to-br ${image.tint} ${activeArticle.images.length === 1 ? "col-span-2" : ""
+                          }`}
                       >
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
                         <div className="relative z-10 flex h-full items-end p-4 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-600">
@@ -338,36 +334,16 @@ export default function Home() {
 
       <header className="relative z-10 border-b border-foreground/20 bg-transparent">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border py-3 text-xs text-muted-foreground">
-            <span className="dateline">Saturday, January 31, 2026</span>
-            <span className="section-label">Today&apos;s Paper</span>
-            <span className="dateline">S&amp;P 500 -0.43%</span>
-          </div>
           <div className="grid items-center gap-4 py-6 md:grid-cols-[1fr_auto_1fr]">
             <div className="hidden items-center gap-3 text-xs text-muted-foreground md:flex">
-              <span className="section-label">U.S.</span>
-              <span className="section-label">International</span>
-              <span className="section-label">Canada</span>
-              <span className="section-label">Español</span>
-              <span className="section-label">中文</span>
             </div>
             <div className="text-center">
               <h1 className="headline-masthead text-4xl text-foreground md:text-6xl">
                 Keynews Daily
               </h1>
-              <p className="section-label mt-2 text-muted-foreground">
-                AI Newspaper · Personalized · Live
-              </p>
             </div>
             <div className="flex items-center justify-end gap-3 text-xs text-muted-foreground">
-              <span className="dateline inline-flex items-center gap-2">
-                <MapPin className="size-4 text-muted-foreground" />
-                Urbana-Champaign
-              </span>
-              <span className="dateline inline-flex items-center gap-2">
-                <Newspaper className="size-4 text-muted-foreground" />
-                Edition 01
-              </span>
+
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 border-y border-border py-2 text-xs text-muted-foreground">
@@ -405,7 +381,7 @@ export default function Home() {
                 <h2 className="headline-primary text-2xl text-foreground md:text-3xl">
                   Overview of personal, local, and global intelligence.
                 </h2>
-                <p className="article-body text-muted-foreground">
+                <p className="article-body font-serif text-muted-foreground">
                   MCP signals, personal context, bias checks, and actionable recaps power each
                   section. Jump into the coverage below.
                 </p>
@@ -449,7 +425,7 @@ export default function Home() {
                 return (
                   <div key={section.id} id={section.id} className="py-3">
                     <div className="mb-2 border-t border-b border-border" />
-                    
+
                     <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
                       <div>
                         <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
@@ -479,9 +455,8 @@ export default function Home() {
                               {article.images.map((image) => (
                                 <div
                                   key={`${article.title}-${image.label}`}
-                                  className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${
-                                    article.images.length === 1 ? "col-span-2" : ""
-                                  }`}
+                                  className={`relative h-28 overflow-hidden newspaper-border-thin bg-gradient-to-br ${image.tint} ${article.images.length === 1 ? "col-span-2" : ""
+                                    }`}
                                 >
                                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
                                   <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
@@ -493,7 +468,7 @@ export default function Home() {
                             <div className="space-y-2">
                               <h4 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">{article.title}</h4>
                               <div className="relative">
-                                <p className="article-body text-muted-foreground transition-colors group-hover:text-zinc-400">
+                                <p className="article-body font-serif text-muted-foreground transition-colors group-hover:text-zinc-400">
                                   {getPreviewText(article.summary)}
                                 </p>
                               </div>
@@ -574,8 +549,8 @@ export default function Home() {
                   <p className="section-label text-muted-foreground">
                     Games
                   </p>
-                  <h3 className="headline-primary text-2xl text-foreground">Daily Games</h3>
-                  <p className="article-body text-muted-foreground">
+                  <h3 className="headline-primary text-2xl text-foreground">Daily Crossword</h3>
+                  <p className="article-body font-serif text-muted-foreground">
                     Keep focus sharp with a quick puzzle tailored to your brief.
                   </p>
                 </div>
@@ -596,7 +571,7 @@ export default function Home() {
                     <Gamepad2 className="size-4 text-muted-foreground" />
                     Today&apos;s Game
                   </p>
-                  <p className="article-body mt-2 text-muted-foreground">
+                  <p className="article-body font-serif mt-2 text-muted-foreground">
                     15×15 grid with checks, reveals, and autosave.
                   </p>
                   <div className="mt-3">
@@ -636,7 +611,7 @@ export default function Home() {
                     <TrendingUp className="size-4 text-muted-foreground" />
                     Progress
                   </p>
-                  <p className="article-body mt-2 text-muted-foreground">
+                  <p className="article-body font-serif mt-2 text-muted-foreground">
                     Timer control, quick checks, and clue navigation are ready.
                   </p>
                 </div>
@@ -652,7 +627,7 @@ export default function Home() {
                     Personalized Actions
                   </p>
                   <h3 className="headline-primary text-2xl text-foreground">Next moves, already queued.</h3>
-                  <p className="article-body text-muted-foreground">
+                  <p className="article-body font-serif text-muted-foreground">
                     Your homepage stays ready for contextual follow-ups like chat threads,
                     puzzle drops, and quick replies when breaking news changes.
                   </p>
@@ -766,7 +741,7 @@ export default function Home() {
                     <div key={item.name} className="flex items-center justify-between text-sm">
                       <span className="font-medium font-serif">{item.name}</span>
                       <div className="flex items-center gap-2">
-                         <span className={`font-medium ${item.change.startsWith('+') ? 'text-green-700' : 'text-red-700'}`}>
+                        <span className={`font-medium ${item.change.startsWith('+') ? 'text-green-700' : 'text-red-700'}`}>
                           {item.change}
                         </span>
                       </div>
@@ -774,16 +749,16 @@ export default function Home() {
                   ))}
                 </div>
                 <p className="article-body mt-2 text-xs text-muted-foreground">{stockPanel.summary}</p>
-                 <div className="mt-3">
-                    <Link
-                      href={stockPanel.action.href}
-                      target="_blank"
-                      className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 transition hover:text-emerald-600"
-                    >
-                      <ArrowRight className="size-3" />
-                      {stockPanel.action.label}
-                    </Link>
-                  </div>
+                <div className="mt-3">
+                  <Link
+                    href={stockPanel.action.href}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 transition hover:text-emerald-600"
+                  >
+                    <ArrowRight className="size-3" />
+                    {stockPanel.action.label}
+                  </Link>
+                </div>
               </div>
             </section>
 

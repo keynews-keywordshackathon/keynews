@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Playfair_Display, STIX_Two_Text } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
+});
+
+const stix = STIX_Two_Text({
+  variable: "--font-stix",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
 const inter = Inter({
@@ -35,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${inter.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${stix.variable} ${inter.variable} antialiased`}
         suppressHydrationWarning
       >
         {children}

@@ -11,7 +11,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-playfair);
+  --font-serif: var(--font-stix);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -95,9 +95,11 @@
   0% {
     transform: translateY(0px) translateX(0px);
   }
+
   50% {
     transform: translateY(-18px) translateX(10px);
   }
+
   100% {
     transform: translateY(0px) translateX(0px);
   }
@@ -107,6 +109,7 @@
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
@@ -118,9 +121,26 @@
 
 /* Connections Game Animations */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 .animate-shake {
@@ -210,12 +230,12 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-playfair), Georgia, serif;
+    font-family: var(--font-stix), Georgia, serif;
   }
 }
 
 .font-newspaper {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-stix), Georgia, serif;
 }
 
 .font-body {
@@ -223,20 +243,20 @@
 }
 
 .headline-masthead {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-stix), Georgia, serif;
   font-weight: 900;
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
 .headline-primary {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-stix), Georgia, serif;
   font-weight: 700;
   line-height: 1.1;
 }
 
 .headline-secondary {
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-stix), Georgia, serif;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -249,7 +269,7 @@
 
 .drop-cap::first-letter {
   float: left;
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-stix), Georgia, serif;
   font-size: 4rem;
   line-height: 0.8;
   padding-right: 0.5rem;
@@ -281,8 +301,8 @@
 .paper-texture {
   background-color: hsl(40 20% 97%);
   background-image:
-    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.02) 50%, transparent 100%),
-    linear-gradient(0deg, transparent 0%, rgba(0,0,0,0.02) 50%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.02) 50%, transparent 100%),
+    linear-gradient(0deg, transparent 0%, rgba(0, 0, 0, 0.02) 50%, transparent 100%);
 }
 
 .section-label {
