@@ -84,12 +84,14 @@ export async function fetchYouTubeSubscriptions(maxPages: number = 10) {
             return { success: false, error: 'No YouTube tools available' }
         }
 
-        let allSubscriptions: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const allSubscriptions: any[] = []
         let nextPageToken: string | undefined = undefined
         let pageCount = 0
 
         // Paginate through all results
         while (pageCount < maxPages) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const args: Record<string, any> = { max_results: 50 }
             if (nextPageToken) {
                 args.page_token = nextPageToken
@@ -112,11 +114,13 @@ export async function fetchYouTubeSubscriptions(maxPages: number = 10) {
                 }]
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fetchResult = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
 
             console.log(`[Composio] YouTube subscriptions page ${pageCount + 1} result:`, JSON.stringify(fetchResult, null, 2))
 
             // Parse this page's subscriptions
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let pageItems: any[] = []
             let pageNextToken: string | undefined = undefined
 
@@ -156,6 +160,7 @@ export async function fetchYouTubeSubscriptions(maxPages: number = 10) {
 
         // Extract channel names from subscriptions
         const channelNames = allSubscriptions
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((sub: any) => sub.snippet?.title)
             .filter((name: string | undefined): name is string => !!name)
 
@@ -219,11 +224,13 @@ export async function fetchYouTubeChannelActivities() {
             }]
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fetchResult = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
 
         console.log('[Composio] YouTube channel activities result:', JSON.stringify(fetchResult, null, 2))
 
         // Parse the activities from the result
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let activities: any[] = []
 
         if (Array.isArray(fetchResult)) {
@@ -274,6 +281,7 @@ export async function fetchYouTubeData() {
     ])
 
     const subscriptions = subscriptionsResult.success ? subscriptionsResult.subscriptions : []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const channelNames = subscriptionsResult.success ? (subscriptionsResult as any).channelNames || [] : []
     const activities = activitiesResult.success ? activitiesResult.activities : []
 

@@ -157,7 +157,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
             try {
                 const result = await startCalendarAuth(origin)
                 if (result.url) {
-                    window.location.href = result.url
+                    window.location.assign(result.url)
                 }
             } catch (error) {
                 console.error('Failed to start Calendar auth:', error)

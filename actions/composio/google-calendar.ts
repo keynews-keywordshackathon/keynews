@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { getComposioClient, getOpenAIClient } from './shared'
+import { getComposioClient } from './shared'
 
 // ============================================================================
 // Google Calendar MCP Server Actions
@@ -104,11 +104,13 @@ export async function fetchCalendarEvents() {
             }]
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fetchResult = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
 
         console.log('[Composio] Calendar events result:', JSON.stringify(fetchResult, null, 2))
 
         // Parse the events from the result
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let events: any[] = []
 
         if (Array.isArray(fetchResult)) {
@@ -206,6 +208,7 @@ export async function createCalendarEvent(eventDetails: {
             }]
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
 
         return { success: true, event: result }
