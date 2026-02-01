@@ -346,7 +346,7 @@ export default function Home() {
 
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground/1000">
             {[
               { label: "Personal", href: "#personal" },
               { label: "Local", href: "#local" },

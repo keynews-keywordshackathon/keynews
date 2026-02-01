@@ -222,7 +222,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+    font-family: var(--font-inter-tight), var(--font-geist-sans), system-ui, sans-serif;
   }
 
   h1,
@@ -242,7 +242,7 @@
 }
 
 .font-body {
-  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter-tight), var(--font-geist-sans), system-ui, sans-serif;
 }
 
 .headline-masthead {
@@ -309,7 +309,7 @@
 }
 
 .section-label {
-  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter-tight), var(--font-geist-sans), system-ui, sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -317,14 +317,14 @@
 }
 
 .byline {
-  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter-tight), var(--font-geist-sans), system-ui, sans-serif;
   font-size: 0.8rem;
   font-style: italic;
   color: hsl(var(--muted-foreground));
 }
 
 .dateline {
-  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter-tight), var(--font-geist-sans), system-ui, sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -332,7 +332,7 @@
 }
 
 .caption {
-  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter-tight), var(--font-geist-sans), system-ui, sans-serif;
   font-size: 0.75rem;
   color: hsl(var(--muted-foreground));
   line-height: 1.4;

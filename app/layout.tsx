@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Playfair_Display, STIX_Two_Text, Jacquard_24 } from "next/font/google";
+import { Geist, Geist_Mono, Inter_Tight, Playfair_Display, STIX_Two_Text, Jacquard_24 } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,8 +29,8 @@ const jacquard = Jacquard_24({
   weight: "400",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const interTight = Inter_Tight({
+  variable: "--font-inter-tight",
   subsets: ["latin"],
 });
 
@@ -47,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${stix.variable} ${jacquard.variable} ${inter.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${stix.variable} ${jacquard.variable} ${interTight.variable} antialiased`}
         suppressHydrationWarning
       >
         {children}
