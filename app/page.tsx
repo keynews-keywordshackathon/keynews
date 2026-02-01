@@ -383,7 +383,7 @@ export default function Home() {
                 <h2 className="headline-primary text-2xl text-foreground md:text-3xl">
                   Overview of personal, local, and global intelligence.
                 </h2>
-                <p className="article-body font-serif text-muted-foreground">
+                <p className="article-body font-serif text-foreground/80">
                   MCP signals, personal context, bias checks, and actionable recaps power each
                   section. Jump into the coverage below.
                 </p>
@@ -470,7 +470,7 @@ export default function Home() {
                             <div className="space-y-2">
                               <h4 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">{article.title}</h4>
                               <div className="relative">
-                                <p className="article-body font-serif text-muted-foreground transition-colors group-hover:text-zinc-400">
+                                <p className="article-body font-serif transition-colors group-hover:text-zinc-400">
                                   {getPreviewText(article.summary)}
                                 </p>
                               </div>
@@ -552,7 +552,7 @@ export default function Home() {
                     Games
                   </p>
                   <h3 className="headline-primary text-2xl text-foreground">Daily Crossword</h3>
-                  <p className="article-body font-serif text-muted-foreground">
+                  <p className="article-body font-serif">
                     Keep focus sharp with a quick puzzle tailored to your brief.
                   </p>
                 </div>
@@ -662,7 +662,7 @@ export default function Home() {
                       className="newspaper-border-thin p-3 transition hover:bg-black/5"
                     >
                       <h4 className="headline-secondary text-sm text-foreground">{item.title}</h4>
-                      <p className="article-body mt-1 text-muted-foreground">{item.description}</p>
+                      <p className="article-body mt-1">{item.description}</p>
                     </div>
                   ))}
                 </div>
@@ -679,7 +679,7 @@ export default function Home() {
                     {weatherPanel.title}
                   </p>
                   <h3 className="headline-secondary mt-2 text-2xl text-foreground">{weatherPanel.location}</h3>
-                  <p className="article-body mt-2 text-muted-foreground">{weatherPanel.summary}</p>
+                  <p className="article-body mt-2">{weatherPanel.summary}</p>
                 </div>
                 <div className="grid gap-0">
                   {weatherPanel.forecast.map((item) => (
@@ -750,7 +750,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <p className="article-body mt-2 text-xs text-muted-foreground">{stockPanel.summary}</p>
+                <p className="article-body mt-2 text-xs">{stockPanel.summary}</p>
                 <div className="mt-3">
                   <Link
                     href={stockPanel.action.href}
@@ -771,7 +771,7 @@ export default function Home() {
                     <Bot className="size-4 text-muted-foreground" />
                     AI Assistant
                   </p>
-                  <p className="article-body mt-1 text-muted-foreground">
+                  <p className="article-body mt-1">
                     Open the assistant for quick analysis.
                   </p>
                 </div>

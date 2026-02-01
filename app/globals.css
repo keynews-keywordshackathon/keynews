@@ -264,9 +264,10 @@
 }
 
 .article-body {
-  font-family: var(--font-inter), var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-stix), Georgia, serif;
   line-height: 1.7;
-  font-size: 0.95rem;
+  font-size: 1.025rem;
+  color: oklch(0.43 0 0);
 }
 
 .drop-cap::first-letter {
