@@ -23,6 +23,11 @@ export async function generateInterestsAction() {
     const stream = createStreamableValue();
 
     (async () => {
+        const currentDate = new Date();
+        const currentDateString = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
+        
         const logs: string[] = [];
         const log = (message: string) => {
             logs.push(message);
@@ -144,6 +149,9 @@ export async function generateInterestsAction() {
 
             <context>
             This analysis will be used to understand the user's engagement patterns and preferences across different spheres of their life. The goal is to surface meaningful interests that connect to the user's signals, not list the activities themselves.
+            
+            Current date: ${currentDateString} (${currentMonth} ${currentYear})
+            Analysis timeframe: Consider recent developments and current trends up to ${currentDateString} when identifying interests.
             </context>
 
             <user_data>
@@ -226,11 +234,12 @@ export async function generateInterestsAction() {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let interests: any = {};
             try {
+                log('LLM CALL: Generating interests from user data...');
                 const { text } = await generateText({
                     model: google('gemini-3-flash-preview'),
                     prompt: prompt,
                 });
-                log('Received response from Gemini.');
+                log('LLM CALL: Received response from Gemini.');
 
                     // Try to parse JSON
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
@@ -256,7 +265,10 @@ export async function generateInterestsAction() {
                     </task>
 
                     <context>
-                    These search queries will be used to discover current articles, trends, and developments related to the user's interest. The queries should be optimized for search engines and focus on recent content from the last year to ensure relevance and timeliness.
+                    These search queries will be used to discover current articles, trends, and developments related to the user's interest. The queries should be optimized for search engines and focus on recent content from ${currentYear} to ensure relevance and timeliness.
+                    
+                    Current date: ${currentDateString}
+                    Target timeframe: ${currentYear}, ${currentMonth} ${currentYear}, or recent developments up to ${currentDateString}
                     </context>
 
                     <interest_details>
@@ -276,20 +288,20 @@ export async function generateInterestsAction() {
                     </instructions>
 
                     <query_requirements>
-                    - Each query must include a time constraint (e.g., "2024", "2025", "recent", "May 2025")
+                    - Each query must include a time constraint (e.g., "${currentYear}", "${currentMonth} ${currentYear}", "recent", "latest", "new", "${currentDateString}")
                     - Focus on actionable, specific search terms rather than generic phrases
                     - Use terminology that would appear in recent articles, news, or discussions
                     - Consider including terms like "trends", "developments", "latest", "new" when appropriate
-                    - Optimize for discoverability of current, high-quality content
+                    - Optimize for discoverability of current, high-quality content from ${currentYear}
                     </query_requirements>
 
                     <examples>
                     <example>
                     If the interest is about "sustainable urban farming practices in Chicago":
-                    Good queries:
-                    - "Chicago urban farming innovations 2024 2025"
-                    - "sustainable rooftop gardens Chicago recent developments"
-                    - "community farming initiatives Chicago last year"
+                    Good queries (using ${currentYear} as reference):
+                    - "Chicago urban farming innovations ${currentYear}"
+                    - "sustainable rooftop gardens Chicago ${currentMonth} ${currentYear}"
+                    - "community farming initiatives Chicago recent developments"
 
                     Bad queries (too generic or no temporal constraint):
                     - "urban farming"
@@ -311,15 +323,17 @@ export async function generateInterestsAction() {
                     - Output must be valid, parseable JSON array
                     - Exactly three queries required
                     - Each query must be 5-10 words long
-                    - Each query must include temporal reference to last year/2024/2025
+                    - Each query must include temporal reference to ${currentYear}, ${currentMonth} ${currentYear}, or recent timeframe
                     - No markdown formatting, code blocks, or explanatory text
                     - Queries should be distinct and non-overlapping
                     </constraints>
                 `;
+                    log('LLM CALL: Generating search queries for interest...');
                     const { text } = await generateText({
                         model: google('gemini-3-flash-preview'),
                         prompt: queryPrompt,
                     });
+                    log('LLM CALL: Search queries generated');
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                     const parsed = JSON.parse(cleanResult);
                     if (Array.isArray(parsed)) {
@@ -392,6 +406,13 @@ export async function generateInterestsAction() {
                     Generate 1 to 2 detailed news report-length articles based on the interest and the source articles.
                     </task>
 
+                    <context>
+                    Generate news articles with current date context. Write as if reporting on recent developments and current events.
+                    
+                    Current date: ${currentDateString} (${currentMonth} ${currentYear})
+                    Write articles as if published around ${currentMonth} ${currentYear}, reporting on recent developments.
+                    </context>
+
                     <interest>
                     <category>${category}</category>
                     <description>${interest}</description>
@@ -445,10 +466,12 @@ export async function generateInterestsAction() {
                     </output_format>
                 `;
 
+                    log('LLM CALL: Generating news cards from articles...');
                     const { text } = await generateText({
                         model: google('gemini-3-flash-preview'),
                         prompt
                     });
+                    log('LLM CALL: News cards generated');
 
                         const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
                         const parsed = JSON.parse(cleanResult);
