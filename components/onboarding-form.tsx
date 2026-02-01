@@ -17,37 +17,37 @@ import { startGmailAuth, startCalendarAuth, startYouTubeAuth, startTwitterAuth, 
 import { saveOnboardingData } from '@/actions/onboarding'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
-import { 
+import {
     Calendar, Twitter, Mail, Youtube, Newspaper,
-    Monitor, Bot, Trophy, Landmark, Film, Briefcase, 
-    FlaskConical, Heart, Plane, Pill, UtensilsCrossed, 
+    Monitor, Bot, Trophy, Landmark, Film, Briefcase,
+    FlaskConical, Heart, Plane, Pill, UtensilsCrossed,
     Leaf, Palette, GraduationCap, Gamepad2
 } from 'lucide-react'
 
 const INTEGRATIONS = [
-    { 
-        id: 'Google Calendar', 
-        name: 'Google Calendar', 
+    {
+        id: 'Google Calendar',
+        name: 'Google Calendar',
         description: 'Events, schedules, and appointments',
-        icon: Calendar 
+        icon: Calendar
     },
-    { 
-        id: 'X', 
-        name: 'X (Twitter)', 
+    {
+        id: 'X',
+        name: 'X (Twitter)',
         description: 'Tweets, likes, and timeline',
-        icon: Twitter 
+        icon: Twitter
     },
-    { 
-        id: 'Gmail', 
-        name: 'Gmail', 
+    {
+        id: 'Gmail',
+        name: 'Gmail',
         description: 'Emails and newsletters',
-        icon: Mail 
+        icon: Mail
     },
-    { 
-        id: 'YouTube', 
-        name: 'YouTube', 
+    {
+        id: 'YouTube',
+        name: 'YouTube',
         description: 'Subscriptions and watch history',
-        icon: Youtube 
+        icon: Youtube
     },
 ]
 
@@ -242,12 +242,12 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                 </div>
                                 <h3 className="text-2xl font-bold text-center">News That Knows You</h3>
                                 <p className="text-muted-foreground text-center max-w-md">
-                                    We analyze your interests, connect to your digital life, 
-                                    and create a personalized newspaper written for you. 
+                                    We analyze your interests, connect to your digital life,
+                                    and create a personalized newspaper written for you.
                                 </p>
                                 <div className="grid grid-cols-2 gap-4 w-full mt-10">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="fullName">Full Name</Label>
+                                        <Label htmlFor="fullName">Name</Label>
                                         <Input
                                             id="fullName"
                                             placeholder="John Doe"
