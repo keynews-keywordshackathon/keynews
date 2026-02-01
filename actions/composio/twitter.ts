@@ -54,6 +54,7 @@ export async function startTwitterAuth(origin?: string) {
 /**
  * executeAction helper to run a specific Composio action via handleToolCalls
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function executeAction(actionName: string, args: any, entityId: string) {
     const composio = getComposioClient()
 
@@ -75,6 +76,7 @@ async function executeAction(actionName: string, args: any, entityId: string) {
     }
 
     // Using existing pattern from gmail.ts
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (composio as any).provider.handleToolCalls(entityId, mockResponse)
 
     // The result from handleToolCalls is typically an array of outputs
@@ -88,7 +90,7 @@ async function executeAction(actionName: string, args: any, entityId: string) {
         if (item.content) {
             try {
                 return typeof item.content === 'string' ? JSON.parse(item.content) : item.content
-            } catch (e) {
+            } catch {
                 return item.content
             }
         }

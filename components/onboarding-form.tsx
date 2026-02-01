@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { startGmailAuth, startCalendarAuth, startYouTubeAuth, startTwitterAuth, fetchEmails, fetchCalendarEvents, fetchYouTubeData, getTwitterUser, getLikedTweets, getHomeTimeline } from '@/actions/composio'
+import { saveOnboardingData } from '@/actions/onboarding'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 const INTERESTS = [
@@ -155,7 +156,7 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
             try {
                 const result = await startCalendarAuth(origin)
                 if (result.url) {
-                    window.location.href = result.url
+                    window.location.assign(result.url)
                 }
             } catch (error) {
                 console.error('Failed to start Calendar auth:', error)
