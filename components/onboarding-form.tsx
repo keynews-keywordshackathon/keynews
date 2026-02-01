@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { startGmailAuth, startCalendarAuth, startYouTubeAuth, startTwitterAuth, fetchEmails, fetchCalendarEvents, fetchYouTubeData, getTwitterUser, getLikedTweets, getHomeTimeline } from '@/actions/composio'
+import { saveOnboardingData } from '@/actions/onboarding'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 const INTERESTS = [
@@ -37,13 +38,13 @@ const INTERESTS = [
 export function OnboardingForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
     const searchParams = useSearchParams()
     const connectedAccountId = searchParams.get('connected_account_id')
-    const [step, setStep] = useState(() => (connectedAccountId ? 2 : 1))
-    const totalSteps = 2
+    const [step, setStep] = useState(() => (connectedAccountId ? 3 : 1))
+    const totalSteps = 3
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
     const [fullName, setFullName] = useState('')
     const [location, setLocation] = useState('')
     const [isSaving, setIsSaving] = useState(false)
-    const displayStep = connectedAccountId ? 2 : step
+    const displayStep = connectedAccountId ? 3 : step
 
     useEffect(() => {
         console.log('--- TEST LOG: OnboardingForm mounted/updated.')
@@ -116,7 +117,8 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
 
 
     const handleNext = async () => {
-        if (!connectedAccountId && step === 1) {
+        if (!connectedAccountId && step === 2) {
+            // Save interests data before moving to account connections
             setIsSaving(true)
             try {
                 const result = await saveOnboardingData({
@@ -200,22 +202,64 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
             <Card className="mx-auto flex flex-col" style={{ width: 700, height: 700 }}>
                 <CardHeader className="gap-4">
                     <div className="flex items-center justify-between">
-                        <CardTitle>Onboarding</CardTitle>
+                        <CardTitle>
+                            {displayStep === 1 && "Discover Your Personalized News"}
+                            {displayStep === 2 && "What Topics Interest You?"}
+                            {displayStep === 3 && "Connect to Enhance Your Experience"}
+                        </CardTitle>
                         <span className="text-sm text-muted-foreground">
                             Step {displayStep} of {totalSteps}
                         </span>
                     </div>
                     <Progress value={progress} className="h-2" />
                     <CardDescription>
-                        {step === 1
-                            ? "Let's start with your basic information."
-                            : 'Connect your accounts.'}
+                        {displayStep === 1 && "Welcome to Keynews - Your AI-powered personalized news experience"}
+                        {displayStep === 2 && "Select the topics that matter most to you"}
+                        {displayStep === 3 && "Connect your accounts to personalize your feed"}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-auto">
                     <form onSubmit={handleSubmit} id="onboarding-form">
                         {displayStep === 1 && (
                             <div className="grid gap-6">
+                                <div className="space-y-4">
+                                    <h3 className="text-xl font-semibold">Welcome to Keynews</h3>
+                                    <p className="text-muted-foreground">
+                                        Keynews is your personalized AI-powered news platform that delivers 
+                                        intelligent, contextual news tailored specifically to you. We combine 
+                                        signals from your calendar, inbox, subscriptions, and interests to 
+                                        create a unique daily brief that matters to you.
+                                    </p>
+                                    <div className="space-y-3">
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-2xl">📰</span>
+                                            <div>
+                                                <p className="font-medium">Personalized Articles</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    News curated based on your interests, location, and activity
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-2xl">🎯</span>
+                                            <div>
+                                                <p className="font-medium">Actionable Insights</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Each story includes why it matters and what you can do about it
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-2xl">🔗</span>
+                                            <div>
+                                                <p className="font-medium">Smart Integrations</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Connect your accounts to enhance personalization and context
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="fullName">Full Name</Label>
@@ -238,29 +282,42 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                                         />
                                     </div>
                                 </div>
-                                <div className="grid gap-4">
-                                    <Label>Your Interests</Label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {INTERESTS.map((interest) => (
-                                            <Button
-                                                key={interest.id}
-                                                type="button"
-                                                variant={selectedInterests.includes(interest.id) ? 'default' : 'outline'}
-                                                onClick={() => toggleInterest(interest.id)}
-                                                className="w-full h-auto py-6 px-4 flex flex-row items-center justify-center gap-4"
-                                            >
-                                                <span className="text-xl">{interest.emoji}</span>
-                                                <span className="text-sm">{interest.label}</span>
-                                            </Button>
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
                         )}
 
                         {displayStep === 2 && (
+                            <div className="grid gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-base">Select your interests</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        Choose the topics you'd like to see in your personalized feed
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {INTERESTS.map((interest) => (
+                                        <Button
+                                            key={interest.id}
+                                            type="button"
+                                            variant={selectedInterests.includes(interest.id) ? 'default' : 'outline'}
+                                            onClick={() => toggleInterest(interest.id)}
+                                            className="w-full h-auto py-6 px-4 flex flex-row items-center justify-center gap-4"
+                                        >
+                                            <span className="text-xl">{interest.emoji}</span>
+                                            <span className="text-sm">{interest.label}</span>
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {displayStep === 3 && (
                             <div className="grid gap-4">
-                                <Label>Connect your accounts</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-base">Connect your accounts</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        Link your accounts to enhance personalization and get more relevant content
+                                    </p>
+                                </div>
                                 <div className="grid grid-cols-1 gap-4">
                                     {['Google Calendar', 'X', 'Gmail', 'YouTube'].map((platform) => (
                                         <Button
