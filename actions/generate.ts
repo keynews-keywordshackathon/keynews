@@ -186,7 +186,7 @@ export async function generateInterestsAction() {
             let interests: any = {};
             try {
                 const { text } = await generateText({
-                    model: google('gemini-3-pro-preview'),
+                    model: google('gemini-3-flash-preview'),
                     prompt: prompt,
                 });
                 log('Received response from Gemini.');
@@ -276,7 +276,7 @@ export async function generateInterestsAction() {
                     </constraints>
                 `;
                     const { text } = await generateText({
-                        model: google('gemini-3-pro-preview'),
+                        model: google('gemini-3-flash-preview'),
                         prompt: queryPrompt,
                     });
                     const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
@@ -405,7 +405,7 @@ export async function generateInterestsAction() {
                 `;
 
                     const { text } = await generateText({
-                        model: google('gemini-3-pro-preview'),
+                        model: google('gemini-3-flash-preview'),
                         prompt
                     });
 
