@@ -12,6 +12,7 @@ import { fetchEmails } from './composio/gmail';
 import { fetchCalendarEvents } from './composio/google-calendar';
 import { getTwitterUser, getLikedTweets } from './composio/twitter';
 import { createClient } from '@/lib/supabase/server';
+import { sections as baseSections } from '@/lib/home/sections';
 
 export async function generateInterestsAction() {
   const stream = createStreamableValue();
@@ -116,9 +117,9 @@ export async function generateInterestsAction() {
             <instructions>
             1. Analyze the user data above to identify patterns, recurring themes, and areas of engagement
             2. For each of the three categories (personal, local, global), identify exactly three distinct interests
-            3. Personal interests must be related to the user's activities but NOT the activities themselves
+            3. Personal interests must be related to the user's activities but NOT the activities themselves, it must specify the user's location and school/organization.
             - Example: if the user plays chess, infer interest in local chess tournaments, clubs, or training groups
-            - Example: if the user uses data analytics, infer interest in data science clubs, meetups, or workshops
+            - Example: if the user uses data analytics, infer interest in data science clubs, meetups, or workshops at the school/company they attend.
             4. Local interests must be based on the user's location only, focusing on community events, city issues, or local institutions relevant to that location
             5. Global interests must be broader, high-level themes inferred from user signals, not specific events
             - Example: if the user joins hackathons, infer interests like computer science, software engineering, tech innovation, or big tech trends
@@ -429,6 +430,37 @@ export async function generateInterestsAction() {
                 });
                 stream.update({ type: 'log', message: `Generated ${generatedArticles.length} cards for interest.` });
             }
+        }
+
+        const savedSections = baseSections.map((section) => {
+            const items = generatedSections[section.id] || [];
+            const articles = items.flatMap((item: { articles?: unknown }) =>
+                Array.isArray(item.articles) ? item.articles : []
+            );
+            return {
+                ...section,
+                articles
+            };
+        });
+
+        try {
+            const { error } = await supabase
+                .from('user_generated_sections')
+                .upsert({
+                    user_id: user.id,
+                    sections: savedSections,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id'
+                });
+
+            if (error) {
+                log(`Failed to save generated sections: ${error.message}`);
+            } else {
+                log('Saved generated sections to Supabase.');
+            }
+        } catch (e) {
+            log(`Error saving generated sections: ${e}`);
         }
 
         stream.update({ type: 'final_result', data: { interests, enrichedInterests, generatedSections } });
