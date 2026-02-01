@@ -596,7 +596,7 @@ export async function generateInterestsAction() {
                     if (error) {
                         log(`Failed to save generated sections: ${error.message} `);
                     } else {
-                        log('Saved generated sections to Supabase.');
+                        log('Saved generated sections to Supabase');
                     }
                 } catch (e) {
                     log(`Error saving generated sections: ${e} `);

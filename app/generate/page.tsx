@@ -11,11 +11,8 @@ import {
     FileText,
     ListChecks,
     Lightbulb,
-    ChevronDown,
     CheckCircle2,
     XCircle,
-    Loader2,
-    Newspaper,
     Mail,
     Calendar,
     Twitter
@@ -164,7 +161,7 @@ export default function GeneratePage() {
                         setUserName(partial.data.name);
                     } else if (partial.type === 'final_result') {
                         setResult(partial.data);
-                        addEvent('Generation complete!', 'complete');
+                        addEvent('Generation complete', 'complete');
                     }
                 }
             }
@@ -196,7 +193,7 @@ export default function GeneratePage() {
     }, []);
 
     return (
-        <div className={`container mx-auto p-4 max-w-5xl flex flex-col gap-8 ${result ? 'min-h-screen' : 'h-screen overflow-hidden'}`}>
+        <div className="container mx-auto p-4 max-w-5xl flex flex-col gap-8 h-screen overflow-hidden">
             <div className="space-y-2 text-center py-8 flex-shrink-0">
                 <h1 className="text-4xl font-serif font-bold tracking-tight min-h-[1.2em]">
                     {phase === 'researching' && userName ? `Researching about ${userName}'s interests` :
@@ -207,7 +204,7 @@ export default function GeneratePage() {
             </div>
 
             {/* Event Stream / Progress */}
-            {(isGenerating || (events.length > 0 && !result)) && (
+            {(isGenerating || events.length > 0) && (
                 <div className="w-full max-w-2xl mx-auto relative perspective-[1000px] flex-1 min-h-0">
                     {/* Top fade gradient overlay */}
                     <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
@@ -238,26 +235,7 @@ export default function GeneratePage() {
                 </div>
             )}
 
-            {/* Results Display */}
-            {result && (
-                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="grid gap-8">
-                        <InterestSection title="Personal Interests" interests={result.enrichedInterests?.personal || result.interests?.personal?.map(i => ({ interest: i }))} />
-                        <InterestSection title="Local Interests" interests={result.enrichedInterests?.local || result.interests?.local?.map(i => ({ interest: i }))} />
-                        <InterestSection title="Global Interests" interests={result.enrichedInterests?.global || result.interests?.global?.map(i => ({ interest: i }))} />
-                    </div>
-
-                    <div className="border-t-4 border-double border-foreground py-8">
-                        <h2 className="text-3xl font-serif font-bold text-center mb-12 uppercase tracking-widest">The Daily Brief</h2>
-
-                        <GeneratedSection title="Personal News" items={result.generatedSections?.personal} />
-                        <div className="h-8" />
-                        <GeneratedSection title="Local News" items={result.generatedSections?.local} />
-                        <div className="h-8" />
-                        <GeneratedSection title="Global News" items={result.generatedSections?.global} />
-                    </div>
-                </div>
-            )}
+            {/* Results Display - Removed as per user request */}
         </div>
     );
 }
@@ -335,113 +313,5 @@ function EventCarouselCard({ event }: { event: UIEvent }) {
                 </div>
             </div>
         </Card>
-    );
-}
-
-
-function InterestSection({ title, interests }: { title: string, interests: EnrichedInterest[] | undefined }) {
-    if (!interests || !Array.isArray(interests)) return null;
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-6">
-                    {interests.map((item, i) => (
-                        <div key={i} className="border-b pb-4 last:border-0">
-                            <h3 className="font-semibold text-lg mb-2">{item.interest}</h3>
-                            {item.articles && item.articles.length > 0 ? (
-                                <ul className="space-y-2">
-                                    {item.articles.map((article, j) => (
-                                        <li key={j} className="text-sm group">
-                                            <a href={article.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                                                <div className="mt-1 h-1.5 w-1.5 rounded-full bg-border group-hover:bg-primary transition-colors" />
-                                                <span className="flex-1 line-clamp-1 group-hover:underline">{article.title || article.url}</span>
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-sm text-muted-foreground italic">No articles found.</p>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-function GeneratedSection({ title, items }: { title: string, items: GeneratedItem[] | undefined }) {
-    if (!items || !Array.isArray(items) || items.length === 0) return null;
-    return (
-        <div className="container mx-auto max-w-4xl px-4">
-            <div className="flex items-center gap-4 mb-6">
-                <div className="h-px bg-border flex-1" />
-                <h3 className="font-serif text-2xl font-bold uppercase tracking-wider">{title}</h3>
-                <div className="h-px bg-border flex-1" />
-            </div>
-
-            <div className="grid gap-12">
-                {items.map((item, i) => (
-                    <div key={i} className="space-y-6">
-                        {Array.isArray(item.articles) && item.articles.length > 0 ? (
-                            item.articles.map((article, j) => (
-                                <article key={j} className="grid md:grid-cols-12 gap-6 items-start">
-                                    <div className="md:col-span-8 space-y-4">
-                                        <h4 className="font-serif text-2xl font-bold leading-tight hover:text-blue-900 transition-colors">
-                                            {article.title}
-                                        </h4>
-                                        <p className="font-sans text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                                            {article.relevance}
-                                        </p>
-                                        <div className="font-serif text-lg leading-relaxed text-foreground/90 prose prose-neutral dark:prose-invert max-w-none">
-                                            {article.summary}
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-4 pt-4 border-t border-border/50">
-                                            {article.action?.href && (
-                                                <a
-                                                    href={article.action.href}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                                                >
-                                                    {article.action.label || 'Read Full Story'}
-                                                    <ChevronDown className="ml-1 h-3 w-3 -rotate-90" />
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="md:col-span-4 space-y-4">
-                                        <div className="bg-muted p-4 rounded-lg space-y-3">
-                                            <h5 className="font-sans text-xs font-bold uppercase tracking-wider text-muted-foreground">Why This Matters</h5>
-                                            <p className="text-sm">{article.actionReason}</p>
-                                        </div>
-
-                                        {article.sources && article.sources.length > 0 && (
-                                            <div className="space-y-2">
-                                                <h5 className="font-sans text-xs font-bold uppercase tracking-wider text-muted-foreground">Sources</h5>
-                                                <ul className="space-y-1">
-                                                    {article.sources.map((source, k) => (
-                                                        <li key={k}>
-                                                            <a href={source.href} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 truncate block">
-                                                                {source.label || new URL(source.href).hostname}
-                                                            </a>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </div>
-                                </article>
-                            ))
-                        ) : null}
-                    </div>
-                ))}
-            </div>
-        </div>
     );
 }
