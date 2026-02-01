@@ -4,7 +4,7 @@ export type OriginalArticle = {
   summary: string;
   relevance: string;
   actionReason: string;
-  images: { label: string; tint: string }[];
+  images: { label: string; tint: string; src?: string }[];
   sources: { label: string; href: string }[];
   action: { label: string; cta: string; href: string };
 };
@@ -12,7 +12,7 @@ export type OriginalArticle = {
 export interface NytArticle {
   title: string;
   blurb?: string; // Optional - only some articles have blurbs
-  image?: { src: string; alt: string; label?: string; tint?: string };
+  image?: { src?: string; alt?: string; label?: string; tint?: string };
   originalArticle?: OriginalArticle; // Reference to the original article for click handling
 }
 
