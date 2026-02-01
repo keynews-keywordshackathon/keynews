@@ -33,11 +33,6 @@ export function ConnectionsGame({ puzzle }: ConnectionsGameProps) {
 
     return (
         <div className="w-full max-w-2xl mx-auto p-4 space-y-4">
-            {/* Title */}
-            <h1 className="text-xl font-normal text-center">
-                Create four groups of four!
-            </h1>
-
             {/* Solved Groups - Show during gameplay */}
             {gameState.solvedGroups.length > 0 && gameState.gameStatus === "playing" && (
                 <div className="w-full space-y-2">

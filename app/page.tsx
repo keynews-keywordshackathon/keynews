@@ -19,8 +19,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { CrosswordGame } from "@/components/crossword/crossword-game";
+import { ConnectionsGame } from "@/components/connections/ConnectionsGame";
 import puzzleData from "@/lib/crossword/sample-puzzle.json";
 import type { PuzzleData } from "@/lib/crossword/types";
+import type { Puzzle } from "@/lib/connections/types";
 
 const sections = [
   {
@@ -293,9 +295,11 @@ export default function Home() {
     (typeof sections)[number]["articles"][number] | null
   >(null);
   const [isCrosswordOpen, setIsCrosswordOpen] = useState(false);
+  const [isConnectionsOpen, setIsConnectionsOpen] = useState(false);
+  const [connectionsPuzzle, setConnectionsPuzzle] = useState<Puzzle | null>(null);
 
   useEffect(() => {
-    if (!activeArticle && !isCrosswordOpen) {
+    if (!activeArticle && !isCrosswordOpen && !isConnectionsOpen) {
       document.body.style.overflow = "";
       return;
     }
@@ -303,7 +307,30 @@ export default function Home() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [activeArticle, isCrosswordOpen]);
+  }, [activeArticle, isCrosswordOpen, isConnectionsOpen]);
+
+  useEffect(() => {
+    if (!isConnectionsOpen || connectionsPuzzle) return;
+
+    let isActive = true;
+
+    fetch("/daily-puzzle.json")
+      .then((response) => response.json())
+      .then((data) => {
+        if (isActive) {
+          setConnectionsPuzzle(data as Puzzle);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setConnectionsPuzzle({ id: "fallback", groups: [] });
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isConnectionsOpen, connectionsPuzzle]);
 
   return (
     <div
@@ -509,6 +536,52 @@ export default function Home() {
               </div>
               <div className="max-h-[80vh] overflow-y-auto px-6 py-6 custom-scrollbar">
                 <CrosswordGame puzzle={puzzleData as PuzzleData} />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {isConnectionsOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-white/20 backdrop-blur-md"
+              onClick={() => setIsConnectionsOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 20 }}
+              transition={{
+                type: "spring",
+                damping: 26,
+                stiffness: 280,
+                duration: 0.4,
+              }}
+              className="relative w-[92vw] max-w-[1200px] overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-white/15 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.75)] backdrop-blur-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-white/20 px-6 py-4">
+                <div>
+                  <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.28em] text-zinc-500">
+                    <Gamepad2 className="size-4 text-zinc-400" />
+                    Games
+                  </p>
+                  <h3 className="mt-1 text-lg font-medium">Connections</h3>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setIsConnectionsOpen(false)}>
+                  Close
+                </Button>
+              </div>
+              <div className="max-h-[80vh] overflow-y-auto px-6 py-6 custom-scrollbar">
+                {connectionsPuzzle ? (
+                  <ConnectionsGame puzzle={connectionsPuzzle} />
+                ) : (
+                  <div className="text-sm text-zinc-600">Loading connections...</div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -753,17 +826,23 @@ export default function Home() {
                   <p className="section-label text-muted-foreground">
                     Games
                   </p>
-                  <h3 className="headline-primary text-2xl text-foreground">Daily Crossword</h3>
+                  <h3 className="headline-primary text-2xl text-foreground">Daily Games</h3>
                   <p className="article-body text-muted-foreground">
                     Keep focus sharp with a quick puzzle tailored to your brief.
                   </p>
                 </div>
-                <Button size="sm" className="gap-2" onClick={() => setIsCrosswordOpen(true)}>
-                  <Gamepad2 className="size-4" />
-                  Open crossword
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" className="gap-2" onClick={() => setIsCrosswordOpen(true)}>
+                    <Gamepad2 className="size-4" />
+                    Open crossword
+                  </Button>
+                  <Button size="sm" variant="ghost" className="gap-2" onClick={() => setIsConnectionsOpen(true)}>
+                    <Gamepad2 className="size-4" />
+                    Open connections
+                  </Button>
+                </div>
               </div>
-              <div className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="newspaper-border-thin p-4">
                   <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
                     <Gamepad2 className="size-4 text-muted-foreground" />
@@ -778,6 +857,26 @@ export default function Home() {
                       variant="ghost"
                       className="gap-2"
                       onClick={() => setIsCrosswordOpen(true)}
+                    >
+                      <Gamepad2 className="size-4" />
+                      Play now
+                    </Button>
+                  </div>
+                </div>
+                <div className="newspaper-border-thin p-4">
+                  <p className="section-label inline-flex items-center gap-2 text-muted-foreground">
+                    <Gamepad2 className="size-4 text-muted-foreground" />
+                    Connections
+                  </p>
+                  <p className="article-body mt-2 text-muted-foreground">
+                    Group 16 words into four linked categories.
+                  </p>
+                  <div className="mt-3">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="gap-2"
+                      onClick={() => setIsConnectionsOpen(true)}
                     >
                       <Gamepad2 className="size-4" />
                       Play now
