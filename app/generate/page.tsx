@@ -302,7 +302,7 @@ function EventCarouselCard({ event }: { event: UIEvent }) {
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                        <h4 className={`font-semibold text-sm ${event.isProcessing ? 'text-primary' : ''}`}>
+                        <h4 className={`font-semibold text-sm font-body ${event.isProcessing ? 'text-primary' : ''}`}>
                             {getTitle()}
                         </h4>
                         <span className="text-xs text-muted-foreground whitespace-nowrap">{event.timestamp}</span>
