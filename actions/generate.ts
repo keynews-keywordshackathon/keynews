@@ -117,9 +117,9 @@ export async function generateInterestsAction() {
             <instructions>
             1. Analyze the user data above to identify patterns, recurring themes, and areas of engagement
             2. For each of the three categories (personal, local, global), identify exactly three distinct interests
-            3. Personal interests must be related to the user's activities but NOT the activities themselves
+            3. Personal interests must be related to the user's activities but NOT the activities themselves, it must specify the user's location and school/organization.
             - Example: if the user plays chess, infer interest in local chess tournaments, clubs, or training groups
-            - Example: if the user uses data analytics, infer interest in data science clubs, meetups, or workshops
+            - Example: if the user uses data analytics, infer interest in data science clubs, meetups, or workshops at the school/company they attend.
             4. Local interests must be based on the user's location only, focusing on community events, city issues, or local institutions relevant to that location
             5. Global interests must be broader, high-level themes inferred from user signals, not specific events
             - Example: if the user joins hackathons, infer interests like computer science, software engineering, tech innovation, or big tech trends
