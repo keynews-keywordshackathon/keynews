@@ -9,7 +9,6 @@ import {
   Gamepad2,
   Globe2,
   MapPin,
-  Newspaper,
   Sparkles,
   TrendingUp,
   User,
