@@ -132,28 +132,67 @@ export async function generateInterestsAction() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const enrichedInterests: any = { personal: [], local: [], global: [] };
 
+        const generateQueriesForInterest = async (category: string, interest: string) => {
+            try {
+                const queryPrompt = `
+Generate 3 concise web search queries for the following interest.
+Return a JSON array of strings only.
+
+Category: ${category}
+Interest: ${interest}
+                `;
+                const { text } = await generateText({
+                    model: deepseek('deepseek-chat'),
+                    prompt: queryPrompt,
+                });
+                const cleanResult = text.replace(/```json/g, '').replace(/```/g, '');
+                const parsed = JSON.parse(cleanResult);
+                if (Array.isArray(parsed)) {
+                    return parsed.filter((q) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
+                }
+                if (parsed && Array.isArray(parsed.queries)) {
+                    return parsed.queries.filter((q: unknown) => typeof q === 'string' && q.trim().length > 0).slice(0, 3);
+                }
+                return [interest];
+            } catch (e) {
+                log(`Error generating queries for interest: ${e}`);
+                return [interest];
+            }
+        };
+
         const processInterest = async (category: string, interest: string) => {
             try {
-                log(`Searching news for ${category} interest: "${interest.substring(0, 30)}..."`);
-                const result = await exa.searchAndContents(interest, {
-                    type: "auto",
-                    useAutoprompt: true,
-                    category: "news",
-                    numResults: 3,
-                    text: true
-                });
+                log(`Generating search queries for ${category} interest: "${interest.substring(0, 30)}..."`);
+                const queries = await generateQueriesForInterest(category, interest);
+                const articles: { title: string | null, url: string, text: string | null, query: string }[] = [];
+
+                for (const query of queries) {
+                    log(`Searching news for query: "${query.substring(0, 40)}..."`);
+                    const result = await exa.searchAndContents(query, {
+                        type: "auto",
+                        useAutoprompt: true,
+                        category: "news",
+                        numResults: 3,
+                        text: true
+                    });
+                    for (const r of result.results) {
+                        articles.push({
+                            title: r.title ?? null,
+                            url: r.url,
+                            text: r.text ?? null,
+                            query
+                        });
+                    }
+                }
                 
                 return {
                     interest,
-                    articles: result.results.map(r => ({
-                        title: r.title,
-                        url: r.url,
-                        text: r.text
-                    }))
+                    queries,
+                    articles
                 };
             } catch (e) {
                 log(`Error searching Exa for interest: ${e}`);
-                return { interest, articles: [], error: String(e) };
+                return { interest, queries: [], articles: [], error: String(e) };
             }
         };
 
