@@ -332,7 +332,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <header className="relative z-10 border-b border-foreground/20 bg-transparent">
+      <header className="relative z-10 bg-transparent">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid items-center gap-4 py-6 md:grid-cols-[1fr_auto_1fr]">
             <div className="hidden items-center gap-3 text-xs text-muted-foreground md:flex">
@@ -346,7 +346,7 @@ export default function Home() {
 
             </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-4 border-y border-border py-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
             {[
               { label: "Personal", href: "#personal" },
               { label: "Local", href: "#local" },
@@ -365,6 +365,8 @@ export default function Home() {
                 {item.label}
               </Link>
             ))}
+          </div>
+          <div className="mt-3 flex items-center justify-center gap-4 border-y border-foreground/100 py-0.25">
           </div>
         </div>
       </header>
