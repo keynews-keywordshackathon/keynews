@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-import { startGmailAuth, startCalendarAuth, fetchEmails, fetchCalendarEvents } from '@/actions/composio'
+import { startGmailAuth, startCalendarAuth, startYouTubeAuth, fetchEmails, fetchCalendarEvents, fetchYouTubeData } from '@/actions/composio'
 import { cn } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -50,15 +50,17 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
         console.log('ConnectedAccountID:', connectedAccountId)
         if (connectedAccountId) {
             const fetchAndLog = async () => {
-                // Fetch both; the one they didn't connect will no-op or return empty
-                console.log('Detected connected account, fetching emails and calendar...')
+                // Fetch all; the ones they didn't connect will no-op or return empty
+                console.log('Detected connected account, fetching emails, calendar, and YouTube...')
                 try {
-                    const [emailResult, calendarResult] = await Promise.all([
+                    const [emailResult, calendarResult, youtubeResult] = await Promise.all([
                         fetchEmails(),
                         fetchCalendarEvents(),
+                        fetchYouTubeData(),
                     ])
                     console.log('Email fetch result:', emailResult)
                     console.log('Calendar fetch result:', calendarResult)
+                    console.log('YouTube fetch result:', youtubeResult)
                 } catch (error) {
                     console.error('Failed to fetch after OAuth:', error)
                 }
@@ -104,6 +106,15 @@ export function OnboardingForm({ className, ...props }: React.ComponentPropsWith
                 }
             } catch (error) {
                 console.error('Failed to start Calendar auth:', error)
+            }
+        } else if (platform === 'YouTube') {
+            try {
+                const result = await startYouTubeAuth(origin)
+                if (result.url) {
+                    window.location.href = result.url
+                }
+            } catch (error) {
+                console.error('Failed to start YouTube auth:', error)
             }
         } else {
             console.log('Clicked', platform)

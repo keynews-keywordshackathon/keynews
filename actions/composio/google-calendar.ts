@@ -76,7 +76,7 @@ export async function fetchCalendarEvents() {
     try {
         // Get calendar tools
         const tools = await composio.tools.get(entityId, {
-            tools: ['GOOGLECALENDAR_LIST_EVENTS'],
+            tools: ['GOOGLECALENDAR_EVENTS_LIST'],
         })
 
         if (!tools || tools.length === 0) {
@@ -88,7 +88,7 @@ export async function fetchCalendarEvents() {
             id: 'call_mock_calendar_123',
             type: 'function',
             function: {
-                name: 'GOOGLECALENDAR_LIST_EVENTS',
+                name: 'GOOGLECALENDAR_EVENTS_LIST',
                 arguments: JSON.stringify({
                     max_results: 10,
                     time_min: new Date().toISOString()
@@ -128,26 +128,26 @@ export async function fetchCalendarEvents() {
             }
         }
 
-        // Save to Supabase for testing
+        // Save to Supabase
         try {
-            const supabaseForSave = await createClient()
-            const { data: { user: currentUser } } = await supabaseForSave.auth.getUser()
+            const supabase = await createClient()
+            const { data: { user } } = await supabase.auth.getUser()
 
-            if (currentUser) {
-                const { error: insertError } = await supabaseForSave
+            if (user) {
+                const { error: insertError } = await supabase
                     .from('user_calendar_events')
                     .upsert({
-                        user_id: currentUser.id,
-                        calendar_data: { raw: fetchResult, events },
-                        updated_at: new Date().toISOString(),
+                        user_id: user.id,
+                        calendar_data: events,
+                        updated_at: new Date().toISOString()
                     }, {
-                        onConflict: 'user_id',
+                        onConflict: 'user_id'
                     })
 
                 if (insertError) {
                     console.error('[Supabase] Error saving calendar events:', insertError)
                 } else {
-                    console.log('[Supabase] Successfully saved calendar events for user:', currentUser.id)
+                    console.log('[Supabase] Successfully saved calendar events for user:', user.id)
                 }
             } else {
                 console.warn('[Supabase] No authenticated user found, skipping calendar save')
