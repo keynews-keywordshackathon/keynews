@@ -93,7 +93,7 @@ export function NytFrontSection({
   };
 
   return (
-    <div className="grid grid-cols-[30%_70%] gap-4 border-t border-b border-border py-6">
+    <div className="grid grid-cols-[30%_70%] gap-4 border-t border-border py-6">
       {/* Left Column */}
       <div className="space-y-4">
         {leftArticles.map((article, index) => (

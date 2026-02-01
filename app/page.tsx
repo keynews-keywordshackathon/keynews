@@ -429,6 +429,14 @@ export default function Home() {
             <section className="space-y-4">
               {homeSections.map((section) => {
                 const SectionIcon = sectionIconMap[section.id as keyof typeof sectionIconMap];
+                // Filter out articles already shown in NYT section
+                const remainingArticles = section.articles.filter(
+                  (article) => !usedArticleTitles.has(article.title)
+                );
+                
+                // Skip section if no articles remain
+                if (remainingArticles.length === 0) return null;
+                
                 return (
                   <div key={section.id} id={section.id} className="py-3">
                     <div className="mb-2 border-t border-b border-border" />
@@ -451,9 +459,7 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-2 lg:divide-y-0">
-                      {section.articles
-                        .filter((article) => !usedArticleTitles.has(article.title))
-                        .map((article) => {
+                      {remainingArticles.map((article) => {
                         const visibleImages = article.images.filter(
                           (image) => image.src && !failedImages.has(image.src)
                         );
@@ -496,19 +502,6 @@ export default function Home() {
                                 <p className="article-body font-serif transition-colors group-hover:text-zinc-400">
                                   {getPreviewText(article.summary)}
                                 </p>
-                              </div>
-                              <div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openArticle(article);
-                                  }}
-                                >
-                                  Read full article
-                                  <ArrowUpRight className="size-4" />
-                                </Button>
                               </div>
                               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                 <span className="section-label">
