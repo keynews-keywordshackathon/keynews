@@ -59,7 +59,11 @@ export async function generateInterestsAction() {
                     stream.update({ type: 'user_info', data: { name: userName } });
                 }
 
-                // 2. Fetch Data
+                // 2. Get Location
+                log('Getting user location...');
+                stream.update({ type: 'location', message: 'Acquiring your location to personalize local news and recommendations...' });
+
+                // 3. Fetch Data
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let emailData: any[] = [];
                 try {
@@ -308,7 +312,7 @@ export async function generateInterestsAction() {
                         prompt: prompt,
                         temperature: 0.5,
                     });
-                    
+
                     log('Received list of interests from Keywords AI.');
 
                     // Try to parse JSON
