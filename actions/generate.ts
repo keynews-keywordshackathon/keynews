@@ -202,7 +202,7 @@ export async function generateInterestsAction() {
 
                 const keywordsAIGoogle = createGoogleGenerativeAI({
                     baseURL: process.env.KEYWORDSAI_ENDPOINT_LOCAL,
-                    apiKey: process.env.KEYWORDSAI_API_KEY_TEST,
+                    apiKey: process.env.KEYWORDSAI_API_KEY_TEST || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
                 });
 
                 const prompt = `
