@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  ArrowRight,
   ArrowUpRight,
   Bot,
   CloudSun,
@@ -34,25 +33,24 @@ const getPreviewText = (text: string, sentenceCount = 2) => {
 };
 
 // Transform sections articles into NYTimes format
-const transformToNytFormat = (): NytFrontSectionProps => {
-  const personalSection = sections.find((s) => s.id === "personal");
-  const localSection = sections.find((s) => s.id === "local");
-  const globalSection = sections.find((s) => s.id === "global");
+const transformToNytFormat = (sectionData: typeof sections): Omit<NytFrontSectionProps, 'onArticleClick'> => {
+  const personalSection = sectionData.find((s) => s.id === "personal");
+  const localSection = sectionData.find((s) => s.id === "local");
 
   // Find first article with images for center
-  const centerArticle = sections
+  const centerArticle = sectionData
     .flatMap((s) => s.articles)
-    .find((a) => a.images && a.images.length > 0) || sections[0].articles[0];
+    .find((a) => a.images && a.images.length > 0) || sectionData[0].articles[0];
 
   // Left column: Personal articles (2-3, first has blurb)
   const leftArticles = (personalSection?.articles || []).slice(0, 3).map((article, index) => ({
     title: article.title,
     blurb: index === 0 && personalSection ? getPreviewText(article.summary, 2) : undefined,
-    href: article.action?.href,
+    originalArticle: article,
   })) as NytArticle[];
 
   // Center article: Featured with image
-  const centerNytArticle = {
+  const centerNytArticle: NytArticle = {
     title: centerArticle.title,
     blurb: getPreviewText(centerArticle.summary, 3),
     image: centerArticle.images?.[0]
@@ -63,7 +61,7 @@ const transformToNytFormat = (): NytFrontSectionProps => {
           tint: centerArticle.images[0].tint,
         }
       : undefined,
-    href: centerArticle.action?.href,
+    originalArticle: centerArticle,
   };
 
   // Bottom row: Local articles (2 articles with images)
@@ -78,13 +76,13 @@ const transformToNytFormat = (): NytFrontSectionProps => {
           tint: article.images[0].tint,
         }
       : undefined,
-    href: article.action?.href,
+    originalArticle: article,
   }));
   
   // Ensure we have exactly 2 articles, pad if needed
   const bottomArticles: [NytArticle, NytArticle] = [
-    bottomArticlesList[0] || { title: "", blurb: "" },
-    bottomArticlesList[1] || { title: "", blurb: "" },
+    bottomArticlesList[0] || { title: "" },
+    bottomArticlesList[1] || { title: "" },
   ];
 
   return {
@@ -299,34 +297,41 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl border-2 border-emerald-500/30 bg-transparent p-5 shadow-[0_18px_40px_-35px_rgba(15,23,42,0.7)] backdrop-blur-xl">
-                    <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
-                      <Sparkles className="size-3 text-emerald-600" />
-                      Action
-                    </p>
-                    <div className="mt-4 space-y-4 text-sm text-zinc-700">
-                      <div>
-                        <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                          Why it matters
-                        </p>
-                        <p className="mt-1">{activeArticle.relevance}</p>
+                  <div className="relative group/action inline-block">
+                    <Link
+                      href={activeArticle.action.href}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
+                    >
+                      <Sparkles className="size-4" />
+                      {activeArticle.action.label}
+                    </Link>
+                    
+                    {/* Hover Card */}
+                    <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
+                      <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
+                        {/* Arrow pointer */}
+                        <div className="absolute left-4 top-0 -translate-y-full">
+                          <div className="border-8 border-transparent border-b-white" />
+                        </div>
+                        <div className="absolute left-4 top-0 -translate-y-full">
+                          <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
+                        </div>
+                        <div className="space-y-3 text-sm text-zinc-700">
+                          <div>
+                            <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                              Why it matters
+                            </p>
+                            <p className="mt-1">{activeArticle.relevance}</p>
+                          </div>
+                          <div>
+                            <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                              Why act now
+                            </p>
+                            <p className="mt-1">{activeArticle.actionReason}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
-                          Why act now
-                        </p>
-                        <p className="mt-1">{activeArticle.actionReason}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Link
-                        href={activeArticle.action.href}
-                        target="_blank"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
-                      >
-                        <ArrowRight className="size-4" />
-                        {activeArticle.action.label}
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -468,7 +473,10 @@ export default function Home() {
           <div className="space-y-4">
 
             {/* NYTimes-Style Front Page Section */}
-            <NytFrontSection {...transformToNytFormat()} />
+            <NytFrontSection 
+              {...transformToNytFormat(homeSections)} 
+              onArticleClick={(article) => setActiveArticle(article)}
+            />
 
             {/* Additional sections below */}
             <section className="space-y-4">
@@ -555,35 +563,42 @@ export default function Home() {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-4 rounded-2xl border-2 border-emerald-500/30 bg-transparent p-4 shadow-sm">
-                            <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
-                              <Sparkles className="size-3 text-emerald-600" />
-                              Action
-                            </p>
-                            <div className="mt-3 space-y-3 text-sm text-zinc-700 transition-colors group-hover:text-zinc-400">
-                              <div>
-                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500 transition-colors group-hover:text-zinc-400">
-                                  Why it matters
-                                </p>
-                                <p className="mt-1">{article.relevance}</p>
+                          <div className="mt-4 relative group/action inline-block">
+                            <Link
+                              onClick={(e) => e.stopPropagation()}
+                              href={article.action.href}
+                              target="_blank"
+                              className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
+                            >
+                              <Sparkles className="size-4" />
+                              {article.action.label}
+                            </Link>
+                            
+                            {/* Hover Card */}
+                            <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
+                              <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
+                                {/* Arrow pointer */}
+                                <div className="absolute left-4 top-0 -translate-y-full">
+                                  <div className="border-8 border-transparent border-b-white" />
+                                </div>
+                                <div className="absolute left-4 top-0 -translate-y-full">
+                                  <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
+                                </div>
+                                <div className="space-y-3 text-sm text-zinc-700">
+                                  <div>
+                                    <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                                      Why it matters
+                                    </p>
+                                    <p className="mt-1">{article.relevance}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                                      Why act now
+                                    </p>
+                                    <p className="mt-1">{article.actionReason}</p>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500 transition-colors group-hover:text-zinc-400">
-                                  Why act now
-                                </p>
-                                <p className="mt-1">{article.actionReason}</p>
-                              </div>
-                            </div>
-                            <div className="mt-4">
-                              <Link
-                                onClick={(e) => e.stopPropagation()}
-                                href={article.action.href}
-                                target="_blank"
-                                className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
-                              >
-                                <ArrowRight className="size-4" />
-                                {article.action.label}
-                              </Link>
                             </div>
                           </div>
                         </article>
@@ -745,35 +760,40 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <div className="rounded-2xl border-2 border-emerald-500/30 bg-transparent p-4">
-                  <p className="flex items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-zinc-500">
-                    <Sparkles className="size-3 text-emerald-600" />
-                    Action
-                  </p>
-                  <div className="mt-3 space-y-3 text-sm text-zinc-700">
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.26em] text-zinc-500">
-                        Why it matters
-                      </p>
-                      <p className="mt-1">{weatherPanel.relevance}</p>
-                    </div>
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.26em] text-zinc-500">
-                        Why act now
-                      </p>
-                      <p className="mt-1">{weatherPanel.actionReason}</p>
-                    </div>
-                  </div>
-                  <div className="mt-4 rounded-xl border border-black/15 bg-white/80 p-4">
-                    <p className="text-sm font-medium text-zinc-800">
-                      {weatherPanel.action.label}
-                    </p>
-                    <div className="mt-3">
-                      <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                        <Link href={weatherPanel.action.href} target="_blank">
-                          {weatherPanel.action.cta}
-                        </Link>
-                      </Button>
+                <div className="relative group/action inline-block">
+                  <Link
+                    href={weatherPanel.action.href}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
+                  >
+                    <Sparkles className="size-4" />
+                    {weatherPanel.action.label}
+                  </Link>
+                  
+                  {/* Hover Card */}
+                  <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
+                    <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
+                      {/* Arrow pointer */}
+                      <div className="absolute left-4 top-0 -translate-y-full">
+                        <div className="border-8 border-transparent border-b-white" />
+                      </div>
+                      <div className="absolute left-4 top-0 -translate-y-full">
+                        <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
+                      </div>
+                      <div className="space-y-3 text-sm text-zinc-700">
+                        <div>
+                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                            Why it matters
+                          </p>
+                          <p className="mt-1">{weatherPanel.relevance}</p>
+                        </div>
+                        <div>
+                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                            Why act now
+                          </p>
+                          <p className="mt-1">{weatherPanel.actionReason}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -801,15 +821,42 @@ export default function Home() {
                   ))}
                 </div>
                 <p className="article-body mt-2 text-xs">{stockPanel.summary}</p>
-                <div className="mt-3">
+                <div className="mt-3 relative group/action inline-block">
                   <Link
                     href={stockPanel.action.href}
                     target="_blank"
                     className="inline-flex items-center gap-2 text-xs font-medium text-emerald-700 transition hover:text-emerald-600"
                   >
-                    <ArrowRight className="size-3" />
+                    <Sparkles className="size-3" />
                     {stockPanel.action.label}
                   </Link>
+                  
+                  {/* Hover Card */}
+                  <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
+                    <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
+                      {/* Arrow pointer */}
+                      <div className="absolute left-4 top-0 -translate-y-full">
+                        <div className="border-8 border-transparent border-b-white" />
+                      </div>
+                      <div className="absolute left-4 top-0 -translate-y-full">
+                        <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
+                      </div>
+                      <div className="space-y-3 text-sm text-zinc-700">
+                        <div>
+                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                            Why it matters
+                          </p>
+                          <p className="mt-1">{stockPanel.relevance}</p>
+                        </div>
+                        <div>
+                          <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                            Why act now
+                          </p>
+                          <p className="mt-1">{stockPanel.actionReason}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>

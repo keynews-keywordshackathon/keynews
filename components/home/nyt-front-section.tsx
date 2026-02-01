@@ -4,27 +4,81 @@
  * NYTimes-Style Front Page Section Component
  * 
  * A reusable component that mimics the NYTimes front page layout with a two-column design:
- * - Left column (30%): 2-3 article titles, first article has a blurb
- * - Center column (70%): Featured image with article title and blurb
- * - Bottom row (spans full width): Two equal-width articles with images
+ * - Left column (30%): 2-3 article titles, first article has a blurb and action
+ * - Center column (70%): Featured image with article title, blurb, and action
+ * - Bottom row (spans full width): Two equal-width articles with images and actions
  * 
  * @example
  * ```tsx
  * import { NytFrontSection } from "@/components/home/nyt-front-section";
- * import { nytSampleDataTitles } from "@/lib/home/nyt-sample-data";
  * 
- * <NytFrontSection {...nytSampleDataTitles} />
+ * <NytFrontSection 
+ *   {...nytData} 
+ *   onArticleClick={(article) => setActiveArticle(article)} 
+ * />
  * ```
  */
 
 import Link from "next/link";
-import type { NytFrontSectionProps } from "@/lib/home/nyt-types";
+import { Sparkles } from "lucide-react";
+import type { NytFrontSectionProps, NytArticle, OriginalArticle } from "@/lib/home/nyt-types";
+
+// Action link with hover card showing relevance details
+function ActionLink({ article }: { article: OriginalArticle }) {
+  return (
+    <div className="relative group/action inline-block">
+      <Link
+        onClick={(e) => e.stopPropagation()}
+        href={article.action.href}
+        target="_blank"
+        className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700 transition hover:text-emerald-600"
+      >
+        <Sparkles className="size-4" />
+        {article.action.label}
+      </Link>
+      
+      {/* Hover Card */}
+      <div className="absolute left-0 top-full mt-2 w-72 opacity-0 invisible group-hover/action:opacity-100 group-hover/action:visible transition-all duration-200 z-50">
+        <div className="rounded-xl border border-border bg-white p-4 shadow-lg">
+          {/* Arrow pointer */}
+          <div className="absolute left-4 top-0 -translate-y-full">
+            <div className="border-8 border-transparent border-b-white" />
+          </div>
+          <div className="absolute left-4 top-0 -translate-y-full">
+            <div className="border-8 border-transparent border-b-border" style={{ marginTop: '-1px' }} />
+          </div>
+          <div className="space-y-3 text-sm text-zinc-700">
+            <div>
+              <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                Why it matters
+              </p>
+              <p className="mt-1">{article.relevance}</p>
+            </div>
+            <div>
+              <p className="text-[0.65rem] font-medium uppercase tracking-[0.26em] text-zinc-500">
+                Why act now
+              </p>
+              <p className="mt-1">{article.actionReason}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function NytFrontSection({
   leftArticles,
   centerArticle,
   bottomArticles,
+  onArticleClick,
 }: NytFrontSectionProps) {
+  const handleClick = (article: NytArticle) => {
+    if (article.originalArticle && onArticleClick) {
+      onArticleClick(article.originalArticle);
+    }
+  };
+
   return (
     <div className="grid grid-cols-[30%_70%] gap-4 border-t border-b border-border py-6">
       {/* Left Column */}
@@ -32,23 +86,24 @@ export function NytFrontSection({
         {leftArticles.map((article, index) => (
           <div
             key={index}
-            className={index < leftArticles.length - 1 ? "border-b border-border pb-4" : ""}
+            className={`${index < leftArticles.length - 1 ? "border-b border-border pb-4" : ""}`}
           >
-            {article.href ? (
-              <Link href={article.href} className="group block">
-                <h3 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">
-                  {article.title}
-                </h3>
-                {article.blurb && (
-                  <p className="article-body mt-2 text-muted-foreground">{article.blurb}</p>
-                )}
-              </Link>
-            ) : (
-              <div>
-                <h3 className="headline-secondary text-lg text-foreground">{article.title}</h3>
-                {article.blurb && (
-                  <p className="article-body mt-2 text-muted-foreground">{article.blurb}</p>
-                )}
+            <div
+              className="group cursor-pointer"
+              onClick={() => handleClick(article)}
+            >
+              <h3 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">
+                {article.title}
+              </h3>
+              {article.blurb && (
+                <p className="article-body mt-2 text-muted-foreground transition-colors group-hover:text-zinc-400">
+                  {article.blurb}
+                </p>
+              )}
+            </div>
+            {article.originalArticle && (
+              <div className="mt-3">
+                <ActionLink article={article.originalArticle} />
               </div>
             )}
           </div>
@@ -57,35 +112,38 @@ export function NytFrontSection({
 
       {/* Center Column */}
       <div className="space-y-4">
-        {centerArticle.image && (
-          <div
-            className={`relative h-64 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
-              centerArticle.image.tint || "from-zinc-500/20 via-white/90 to-white"
-            }`}
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-            {centerArticle.image.label && (
-              <div className="caption relative z-10 flex h-full items-end p-3 uppercase tracking-[0.22em] text-muted-foreground">
-                {centerArticle.image.label}
-              </div>
-            )}
-          </div>
-        )}
-        {centerArticle.href ? (
-          <Link href={centerArticle.href} className="group block">
-            <h2 className="headline-primary text-2xl text-foreground transition-colors group-hover:text-zinc-500">
-              {centerArticle.title}
-            </h2>
-            {centerArticle.blurb && (
-              <p className="article-body mt-3 text-muted-foreground">{centerArticle.blurb}</p>
-            )}
-          </Link>
-        ) : (
-          <div>
-            <h2 className="headline-primary text-2xl text-foreground">{centerArticle.title}</h2>
-            {centerArticle.blurb && (
-              <p className="article-body mt-3 text-muted-foreground">{centerArticle.blurb}</p>
-            )}
+        <div 
+          className="group cursor-pointer"
+          onClick={() => handleClick(centerArticle)}
+        >
+          {centerArticle.image && (
+            <div
+              className={`relative h-64 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
+                centerArticle.image.tint || "from-zinc-500/20 via-white/90 to-white"
+              }`}
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+              {centerArticle.image.label && (
+                <div className="caption relative z-10 flex h-full items-end p-3 uppercase tracking-[0.22em] text-muted-foreground">
+                  {centerArticle.image.label}
+                </div>
+              )}
+            </div>
+          )}
+          <h2 className="headline-primary text-2xl text-foreground transition-colors group-hover:text-zinc-500 mt-4">
+            {centerArticle.title}
+          </h2>
+          {centerArticle.blurb && (
+            <p className="article-body mt-3 text-muted-foreground transition-colors group-hover:text-zinc-400">
+              {centerArticle.blurb}
+            </p>
+          )}
+        </div>
+        
+        {/* Action for Center Article */}
+        {centerArticle.originalArticle && (
+          <div className="mt-4">
+            <ActionLink article={centerArticle.originalArticle} />
           </div>
         )}
       </div>
@@ -93,36 +151,40 @@ export function NytFrontSection({
       {/* Bottom Row - spans full width */}
       <div className="col-span-2 grid grid-cols-2 gap-4 pt-4 border-t border-border">
         {bottomArticles.map((article, index) => (
-          <div key={index} className="space-y-3">
-            {article.image && (
-              <div
-                className={`relative h-40 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
-                  article.image.tint || "from-zinc-500/20 via-white/90 to-white"
-                }`}
-              >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
-                {article.image.label && (
-                  <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
-                    {article.image.label}
-                  </div>
-                )}
-              </div>
-            )}
-            {article.href ? (
-              <Link href={article.href} className="group block">
-                <h3 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500">
-                  {article.title}
-                </h3>
-                {article.blurb && (
-                  <p className="article-body mt-2 text-muted-foreground">{article.blurb}</p>
-                )}
-              </Link>
-            ) : (
-              <div>
-                <h3 className="headline-secondary text-lg text-foreground">{article.title}</h3>
-                {article.blurb && (
-                  <p className="article-body mt-2 text-muted-foreground">{article.blurb}</p>
-                )}
+          <div 
+            key={index} 
+            className="space-y-3"
+          >
+            <div
+              className="group cursor-pointer"
+              onClick={() => handleClick(article)}
+            >
+              {article.image && (
+                <div
+                  className={`relative h-40 overflow-hidden newspaper-border-thin bg-gradient-to-br ${
+                    article.image.tint || "from-zinc-500/20 via-white/90 to-white"
+                  }`}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_70%)]" />
+                  {article.image.label && (
+                    <div className="caption relative z-10 flex h-full items-end p-2 uppercase tracking-[0.22em] text-muted-foreground">
+                      {article.image.label}
+                    </div>
+                  )}
+                </div>
+              )}
+              <h3 className="headline-secondary text-lg text-foreground transition-colors group-hover:text-zinc-500 mt-3">
+                {article.title}
+              </h3>
+              {article.blurb && (
+                <p className="article-body mt-2 text-muted-foreground transition-colors group-hover:text-zinc-400">
+                  {article.blurb}
+                </p>
+              )}
+            </div>
+            {article.originalArticle && (
+              <div className="mt-3">
+                <ActionLink article={article.originalArticle} />
               </div>
             )}
           </div>
