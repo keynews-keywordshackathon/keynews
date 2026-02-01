@@ -8,7 +8,6 @@ import { useCrosswordTimer } from "@/hooks/use-crossword-timer";
 import { useSaveCrossword, useLoadCrossword } from "@/hooks/use-local-storage";
 import { CrosswordGrid } from "./crossword-grid";
 import { CrosswordCluePanel } from "./crossword-clue-panel";
-import { CrosswordHeader } from "./crossword-header";
 import { CrosswordToolbar } from "./crossword-toolbar";
 import { CrosswordCompletionModal } from "./crossword-completion-modal";
 import { CrosswordIncorrectModal } from "./crossword-incorrect-modal";
@@ -111,11 +110,6 @@ export function CrosswordGame({ puzzle }: CrosswordGameProps) {
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 space-y-4">
-      <CrosswordHeader
-        title={puzzle.title}
-        author={puzzle.author}
-      />
-
       <CrosswordToolbar
         elapsedSeconds={state.timer.elapsedSeconds}
         isPaused={!state.timer.isRunning && state.timer.elapsedSeconds > 0}
